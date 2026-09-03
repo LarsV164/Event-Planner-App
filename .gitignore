@@ -427,3 +427,5 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# EventApp.App.Build_0.1.1/EventApp.App.Build_0.1.1/appsettings.Development.json
