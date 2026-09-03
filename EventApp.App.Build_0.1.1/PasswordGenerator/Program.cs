@@ -19,7 +19,7 @@ internal class Program
         };
 
         var hasher = new PasswordHasher<OrganiserModel>();
-        var hashedPassword = hasher.HashPassword(organiser, "WinstonDeTank123");
+        var hashedPassword = hasher.HashPassword(organiser, "TestAccount");
 
         Console.WriteLine("Hashed password:");
         Console.WriteLine(hashedPassword);

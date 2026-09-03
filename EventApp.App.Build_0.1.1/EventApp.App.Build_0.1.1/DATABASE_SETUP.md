@@ -4,7 +4,6 @@
 
 This application uses different connection strings based on the environment:
 
-
 - **appsettings.json**: Default connection string (LocalDB) - committed to Git
 - **appsettings.Development.json**: Development override - can be customized per developer
 
