@@ -9,5 +9,8 @@ namespace EventApp.OrganiserPortal.Models
 
         [Range(0, 999999)]
         public decimal Price { get; set; }
+
+        [Required(ErrorMessage = "Aantal is verplicht")]
+        public int Quantity { get; set; }
     }
 }

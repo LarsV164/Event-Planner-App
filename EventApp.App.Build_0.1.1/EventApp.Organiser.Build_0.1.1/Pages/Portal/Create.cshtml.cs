@@ -1,9 +1,10 @@
-using System.Security.Claims;
+using EventApp.OrganiserPortal.Models;
+using EventApp.OrganiserPortal.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using EventApp.OrganiserPortal.Models;
-using EventApp.OrganiserPortal.Repositories;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Security.Claims;
 
 namespace EventApp.OrganiserPortal.Pages.Portal
 {
@@ -33,12 +34,28 @@ namespace EventApp.OrganiserPortal.Pages.Portal
         [BindProperty]
         public List<IFormFile> Images { get; set; } = new();
 
+        public List<SelectListItem> TicketTypeOptions { get; set; } = new();
+
+        private void LoadTicketTypes()
+        {
+            TicketTypeOptions = new List<SelectListItem>
+            {
+                new("Sta-Ticket", "Sta-Ticket"),
+                new("Zit-Ticket", "Zit-Ticket"),
+                new("Invalide-Ticket", "Invalide-Ticket"),
+                new("VIP-Ticket", "VIP-Ticket")
+            };
+        }
+
         public void OnGet()
         {
+            LoadTicketTypes();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
+            LoadTicketTypes();
+
             if (Input.Tickets == null)
             {
                 Input.Tickets = new();

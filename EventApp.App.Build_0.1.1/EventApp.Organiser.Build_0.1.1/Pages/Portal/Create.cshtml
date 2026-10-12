@@ -280,19 +280,38 @@
 
                 -->
 
+                <!-- BESCHRIJVING -->
+
+                <div class="portal-form-group--full">
+                    <h2>Beschrijving</h2>
+                </div>
+
                 <div class="portal-form-group portal-form-group--full">
-                    <label>Tickets</label>
+                    <textarea asp-for="Input.Description"></textarea>
+                    <span asp-validation-for="Input.Description"></span>
+                </div>
+
+                
+                <!-- TICKETS -->
+                <div class="portal-form-group--full">
+                    <h2>Tickets</h2>
+                </div>
+
+                <div class="portal-form-group portal-form-group--full">
+                    <button type="button" id="add-ticket-btn" class="portal-secondary-link">Ticket toevoegen</button>
 
                     <div id="ticket-list" class="portal-ticket-list">
                         @if (Model.Input.Tickets != null && Model.Input.Tickets.Count > 0)
-                        {
-                            for (var i = 0; i < Model.Input.Tickets.Count; i++)
                             {
+                                for (var i = 0; i < Model.Input.Tickets.Count; i++)
+                                {
                                 <div class="portal-ticket-row">
-                                    <div class="portal-ticket-fields">
+                                    <div class="three-columns">
                                         <div class="portal-form-group">
                                             <label asp-for="Input.Tickets[i].TicketType">Ticketsoort</label>
-                                            <input asp-for="Input.Tickets[i].TicketType" />
+                                            <select asp-for="Input.Tickets[i].TicketType" asp-items="Model.TicketTypeOptions">
+                                                <option value="">-- Kies een ticketsoort --</option>
+                                            </select>
                                             <span asp-validation-for="Input.Tickets[i].TicketType"></span>
                                         </div>
 
@@ -301,34 +320,22 @@
                                             <input asp-for="Input.Tickets[i].Price" type="number" step="0.01" min="0" />
                                             <span asp-validation-for="Input.Tickets[i].Price"></span>
                                         </div>
-                                    </div>
 
+                                        <div class="portal-form-group">
+                                            <label asp-for="Input.Tickets[i].Quantity">Aantal beschikbaar</label>
+                                            <input asp-for="Input.Tickets[i].Quantity" type="number" step="1" min="1" />
+                                            <span asp-validation-for="Input.Tickets[i].Quantity"></span>
+                                        </div>
+                                    </div>
                                     <button type="button" class="portal-remove-ticket-btn">Verwijderen</button>
                                 </div>
+                                    
+                                }
                             }
-                        }
-                        else
-                        {
-                            <div class="portal-ticket-row">
-                                <div class="portal-ticket-fields">
-                                    <div class="portal-form-group">
-                                        <label for="Input_Tickets_0__TicketType">Ticketsoort</label>
-                                        <input id="Input_Tickets_0__TicketType" name="Input.Tickets[0].TicketType" />
-                                    </div>
-
-                                    <div class="portal-form-group">
-                                        <label for="Input_Tickets_0__Price">Prijs</label>
-                                        <input id="Input_Tickets_0__Price" name="Input.Tickets[0].Price" type="number" step="0.01" min="0" />
-                                    </div>
-                                </div>
-
-                                <button type="button" class="portal-remove-ticket-btn">Verwijderen</button>
-                            </div>
-                        }
                     </div>
-
-                    <button type="button" id="add-ticket-btn" class="portal-secondary-link">Ticket toevoegen</button>
                 </div>
+
+
 
                 <div class="portal-form-group">
                     <label asp-for="Input.HasStandingPlaces">Staanplaatsen aanwezig</label>
@@ -453,18 +460,26 @@
                 row.className = 'portal-ticket-row';
 
                 row.innerHTML = `
-                    <div class="portal-ticket-fields">
+                    <div class="three-columns">
                         <div class="portal-form-group">
                             <label for="Input_Tickets_${index}__TicketType">Ticketsoort</label>
-                            <input id="Input_Tickets_${index}__TicketType" name="Input.Tickets[${index}].TicketType" />
+                            <select id="Input_Tickets_${index}__TicketType" name="Input.Tickets[${index}].TicketType">
+                                <option value="">-- Kies een ticketsoort --</option>
+                                <option value="Sta-Ticket">Sta-Ticket</option>
+                                <option value="Zit-Ticket">Zit-Ticket</option>
+                                <option value="Invalide-Ticket">Invalide-Ticket</option>
+                                <option value="VIP-Ticket">VIP-Ticket</option>
+                            </select>
                         </div>
-
                         <div class="portal-form-group">
                             <label for="Input_Tickets_${index}__Price">Prijs</label>
-                            <input id="Input_Tickets_${index}__Price" name="Input.Tickets[${index}].Price" type="number" step="0.01" min="0" />
+                            <input id="Input_Tickets_${index}__Price" name="Input.Tickets[${index}].Price" type="number" step="0.01" min="0" value="0" />
+                        </div>
+                        <div class="portal-form-group">
+                            <label for="Input_Tickets_${index}__Quantity">Aantal beschikbaar</label>
+                            <input id="Input_Tickets_${index}__Quantity" name="Input.Tickets[${index}].Quantity" type="number" step="1" min="1" value="1" />
                         </div>
                     </div>
-
                     <button type="button" class="portal-remove-ticket-btn">Verwijderen</button>
                 `;
 
@@ -472,25 +487,16 @@
             }
 
             function reindexTickets() {
-                const rows = ticketList.querySelectorAll('.portal-ticket-row');
-
-                rows.forEach((row, index) => {
-                    const typeLabel = row.querySelector('label[for^="Input_Tickets_"][for$="__TicketType"]');
-                    const typeInput = row.querySelector('input[name^="Input.Tickets["][name$="].TicketType"]');
-                    const priceLabel = row.querySelector('label[for^="Input_Tickets_"][for$="__Price"]');
-                    const priceInput = row.querySelector('input[name^="Input.Tickets["][name$="].Price"]');
-
-                    if (typeLabel) typeLabel.setAttribute('for', `Input_Tickets_${index}__TicketType`);
-                    if (typeInput) {
-                        typeInput.id = `Input_Tickets_${index}__TicketType`;
-                        typeInput.name = `Input.Tickets[${index}].TicketType`;
-                    }
-
-                    if (priceLabel) priceLabel.setAttribute('for', `Input_Tickets_${index}__Price`);
-                    if (priceInput) {
-                        priceInput.id = `Input_Tickets_${index}__Price`;
-                        priceInput.name = `Input.Tickets[${index}].Price`;
-                    }
+                ticketList.querySelectorAll('.portal-ticket-row').forEach((row, index) => {
+                    ['TicketType', 'Price', 'Quantity'].forEach(field => {
+                        const input = row.querySelector(`input[name$=".${field}"]`);
+                        const label = row.querySelector(`label[for$="__${field}"]`);
+                        if (input) {
+                            input.id = `Input_Tickets_${index}__${field}`;
+                            input.name = `Input.Tickets[${index}].${field}`;
+                        }
+                        if (label) label.setAttribute('for', `Input_Tickets_${index}__${field}`);
+                    });
                 });
             }
 
