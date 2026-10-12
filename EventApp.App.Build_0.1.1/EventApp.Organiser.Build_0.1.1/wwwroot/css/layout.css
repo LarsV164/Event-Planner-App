@@ -66,8 +66,19 @@
             line-height: 1.45;
         }
 
+    /* container */
+    .three-columns {
+        display: flex;
+    }
+
+    /* columns */
+    .three-columns > * {
+        width: calc(100% / 3);
+        padding-inline-end: 1rem;
+    }
+
 @media (max-width: 1100px) {
     #EventApp-app .EventApp-page {
-        grid-template-columns: 1fr;
+        grid-template-columns: 2fr;
     }
 }

@@ -24,32 +24,52 @@
 
             <div class="portal-form-grid">
 
+                <!-- EVENT NAAM -->
                 <div class="portal-form-group--full">
                     <h2>Evenement naam</h2>
                 </div>
 
 
                 <div class="portal-form-group">
-                    <!--
+
+                    <!-- EVENT NAAM VELD LABEL
+
                         <label asp-for="Input.EventName">Evenement naam</label>
+
                     -->
+
                     <input asp-for="Input.EventName" />
                     <span asp-validation-for="Input.EventName"></span>
                 </div>
 
-                <!-- 
-                <div class="portal-form-group">
-                    <label asp-for="Input.IndoorsOutdoors">@EventApp.OrganiserPortal.Models.IndoorsOutdoors.MESSAGES_NATURAL_LIST</label>
-                    <select asp-for="Input.IndoorsOutdoors">
-                        <option value="">Kies...</option>
-                        @foreach (var message in EventApp.OrganiserPortal.Models.IndoorsOutdoors.MESSAGES)
-                        {
-                        <option value=@message>@message</option>
-                        }
-                    </select>
-                    <span asp-validation-for="Input.IndoorsOutdoors"></span>
-                </div>
+                <!-- BINNEN / BUITEN DROPDOWN 
+
+                    <div class="portal-form-group">
+                        <label asp-for="Input.IndoorsOutdoors">@EventApp.OrganiserPortal.Models.IndoorsOutdoors.MESSAGES_NATURAL_LIST</label>
+                        <select asp-for="Input.IndoorsOutdoors">
+                            <option value="">Kies...</option>
+                            @foreach (var message in EventApp.OrganiserPortal.Models.IndoorsOutdoors.MESSAGES)
+                            {
+                            <option value=@message>@message</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Input.IndoorsOutdoors"></span>
+                    </div>
+
                 -->
+
+                <!-- ORGINELE BESCHRIJVING VELD
+
+                    <div class="portal-form-group portal-form-group--full">
+                        <label asp-for="Input.Description">Beschrijving</label>
+                        <textarea asp-for="Input.Description"></textarea>
+                        <span asp-validation-for="Input.Description"></span>
+                    </div>
+
+                -->
+
+                <!-- DATUM - TIJD -->
+
                 <div class="portal-form-group--full">
                     <h2>Datum - Tijd</h2>
                 </div>
@@ -78,40 +98,135 @@
                     </div>
                 </div>
 
+                <!-- LOCATIE -->
 
-
-                <div class="portal-form-group portal-form-group--full">
-                    <label asp-for="Input.Description">Beschrijving</label>
-                    <textarea asp-for="Input.Description"></textarea>
-                    <span asp-validation-for="Input.Description"></span>
+                <div class="portal-form-group--full">
+                    <h2>Locatie</h2>
                 </div>
 
-                <div class="portal-form-group portal-form-group--full">
-                    <label asp-for="Input.Address">Adres</label>
-                    <div class="portal-address-row">
-                        <input asp-for="Input.Address"
-                               id="address-input"
-                               placeholder="Typ een adres of plaats een pin op de kaart" />
-                        <button type="button" id="resolve-address-btn" class="portal-secondary-link">Zoek adres</button>
+                <div class="portal-form-group--full">
+                    <div class="three-columns">
+                        <div class="portal-form-group">
+                            <label asp-for="Input.Street"></label>
+                            <input asp-for="Input.Street" autocomplete="address-line1" />
+                            <span asp-validation-for="Input.Street"></span>
+                        </div>
+                        <div class="portal-form-group">
+                            <label asp-for="Input.HouseNumber"></label>
+                            <input asp-for="Input.HouseNumber" />
+                            <span asp-validation-for="Input.HouseNumber"></span>
+                        </div>
+                        <div class="portal-form-group">
+                            <label asp-for="Input.HouseNumberAddition"></label>
+                            <input asp-for="Input.HouseNumberAddition" />
+                        </div>
                     </div>
-                    <span asp-validation-for="Input.Address"></span>
                 </div>
 
-                <div class="portal-form-group portal-form-group--full">
-                    <label>Locatie kiezen</label>
-                    <div class="portal-map-picker">
-                        <div id="event-location-map" class="portal-map-canvas"></div>
+                <div class="portal-form-group--full">
+                    <div class="three-columns">
+                        <div class="portal-form-group">
+                            <label asp-for="Input.PostalCode"></label>
+                            <input asp-for="Input.PostalCode" autocomplete="postal-code" />
+                            <span asp-validation-for="Input.PostalCode"></span>
+                        </div>
+                        <div class="portal-form-group">
+                            <label asp-for="Input.City"></label>
+                            <input asp-for="Input.City" autocomplete="address-level2" />
+                            <span asp-validation-for="Input.City"></span>
+                        </div>
                     </div>
-                    <p class="portal-map-help">
-                        Plaats een pin op de kaart of typ een adres. De dichtstbijzijnde match wordt automatisch gekozen.
+                </div>
+
+                <!-- ORGINELE 1 REGEL ADRES
+
+                    <div class="portal-form-group portal-form-group--full">
+                        <label asp-for="Input.Address">Adres</label>
+                        <div class="portal-address-row">
+                            <input asp-for="Input.Address"
+                                   id="address-input"
+                                   placeholder="Typ een adres of plaats een pin op de kaart" />
+                            <button type="button" id="resolve-address-btn" class="portal-secondary-link">Zoek adres</button>
+                        </div>
+                        <span asp-validation-for="Input.Address"></span>
+                    </div>
+
+                -->
+                
+                <!-- ORGINELE KAART
+
+                    <div class="portal-form-group portal-form-group--full">
+                        <label>Locatie kiezen</label>
+                        <div class="portal-map-picker">
+                            <div id="event-location-map" class="portal-map-canvas"></div>
+                        </div>
+                        <p class="portal-map-help">
+                            Plaats een pin op de kaart of typ een adres. De dichtstbijzijnde match wordt automatisch gekozen.
+                        </p>
+                        <div id="map-status" class="portal-map-status" aria-live="polite"></div>
+                        <span asp-validation-for="Input.Latitude"></span>
+                        <span asp-validation-for="Input.Longitude"></span>
+                    </div>
+
+                    <input asp-for="Input.Latitude" type="hidden" id="latitude-input" />
+                    <input asp-for="Input.Longitude" type="hidden" id="longitude-input" />
+
+                -->
+
+                <!-- MEDIA -->
+
+                <div class="portal-form-group--full">
+                    <h2>Media</h2>
+                    <p class="portal-image-help">
+                        Upload maximaal 10 afbeeldingen. Afbeeldingen worden vierkant bijgesneden. Klik op een afbeelding om de positie aan te passen.
                     </p>
-                    <div id="map-status" class="portal-map-status" aria-live="polite"></div>
-                    <span asp-validation-for="Input.Latitude"></span>
-                    <span asp-validation-for="Input.Longitude"></span>
+
                 </div>
 
-                <input asp-for="Input.Latitude" type="hidden" id="latitude-input" />
-                <input asp-for="Input.Longitude" type="hidden" id="longitude-input" />
+                <div class="portal-form-group portal-form-group--full portal-image-upload">
+                    <div class="portal-form-group">
+                        <button type="button" id="add-images-btn" class="portal-secondary-link">Selecteer of sleep afbeeldingen</button>
+                    </div>
+                    <input id="images-input" name="Images" type="file" accept="image/*" multiple hidden />
+
+                    <div class="portal-image-strip-shell" id="image-strip-shell" hidden>
+                        <div id="image-strip" class="portal-image-strip"></div>
+                    </div>
+
+                    <div id="image-meta-inputs"></div>
+
+                </div>
+
+                <div id="image-position-modal" class="portal-image-modal" hidden>
+                    <div class="portal-image-modal-card">
+                        <div class="portal-image-modal-header">
+                            <h3>Afbeelding positioneren</h3>
+                            <button type="button" id="close-image-modal" class="portal-image-modal-close">×</button>
+                        </div>
+
+                        <div class="portal-image-modal-preview-wrap">
+                            <div class="portal-image-modal-preview">
+                                <img id="position-preview-image" alt="Voorbeeld van afbeelding uitsnede" />
+                            </div>
+                        </div>
+
+                        <div class="portal-image-modal-controls">
+                            <label for="position-x-range">Horizontale positie</label>
+                            <input id="position-x-range" type="range" min="0" max="100" step="1" value="50" />
+
+                            <label for="position-y-range">Verticale positie</label>
+                            <input id="position-y-range" type="range" min="0" max="100" step="1" value="50" />
+                        </div>
+
+                        <div class="portal-image-modal-actions">
+                            <button type="button" id="save-image-position" class="auth-submit-btn">Opslaan</button>
+                        </div>
+                    </div>
+                </div>
+                <p id="image-count">0/10</p>
+
+                                        
+                <!-- ORIGINELE AFBEELDING TOEVOEGEN
 
                 <div class="portal-form-group portal-form-group--full portal-image-upload">
                     <label>Afbeeldingen</label>
@@ -155,6 +270,8 @@
                         </div>
                     </div>
                 </div>
+
+                -->
 
                 <div class="portal-form-group portal-form-group--full">
                     <label>Tickets</label>

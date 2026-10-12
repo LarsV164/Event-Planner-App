@@ -42,5 +42,22 @@ namespace EventApp.OrganiserPortal.Models
         public List<string> Categories { get; set; } = new();
         public List<string> AccessibilityOptions { get; set; } = new();
         public List<ImageCropPositionInputModel> ImageCropPositions { get; set; } = new();
+
+        //NIEUWE DINGEN TOEGEVOED
+        [Required, Display(Name = "Straat")]
+        public string Street { get; set; } = "";
+
+        [Required, Display(Name = "Huisnummer")]
+        public string HouseNumber { get; set; } = "";
+
+        [Display(Name = "Toevoeging")]
+        public string? HouseNumberAddition { get; set; }
+
+        [Required, Display(Name = "Postcode")]
+        [RegularExpression(@"^[1-9][0-9]{3}\s?[A-Za-z]{2}$", ErrorMessage = "Ongeldige postcode")]
+        public string PostalCode { get; set; } = "";
+
+        [Required, Display(Name = "Plaats")]
+        public string City { get; set; } = "";
     }
 }

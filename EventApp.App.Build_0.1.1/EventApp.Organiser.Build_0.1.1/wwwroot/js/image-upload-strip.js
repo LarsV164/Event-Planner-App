@@ -1,203 +1,113 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
-    const maxImages = 10;
-    const fileInput = document.getElementById("images-input");
-    const imageStrip = document.getElementById("image-strip");
-    const imageMetaInputs = document.getElementById("image-meta-inputs");
+﻿(() => {
+    const MAX = 10;
+    const items = []; // { file, url, x, y }
+    let editing = null;
 
-    const modal = document.getElementById("image-position-modal");
-    const closeModalBtn = document.getElementById("close-image-modal");
-    const savePositionBtn = document.getElementById("save-image-position");
-    const previewImage = document.getElementById("position-preview-image");
-    const positionXRange = document.getElementById("position-x-range");
-    const positionYRange = document.getElementById("position-y-range");
+    const $ = id => document.getElementById(id);
+    const input = $('images-input'), addBtn = $('add-images-btn'),
+          shell = $('image-strip-shell'), strip = $('image-strip'),
+          meta = $('image-meta-inputs'), modal = $('image-position-modal'),
+          preview = $('position-preview-image'),
+          rx = $('position-x-range'), ry = $('position-y-range');
 
-    if (!fileInput || !imageStrip || !imageMetaInputs) {
-        return;
-    }
+    if (!input || !addBtn) return;
 
-    let imageItems = [];
-    let editingIndex = -1;
+    addBtn.addEventListener('click', () => input.click());
 
-    function syncFileInput() {
-        const dataTransfer = new DataTransfer();
 
-        imageItems.forEach(item => {
-            dataTransfer.items.add(item.file);
-        });
 
-        fileInput.files = dataTransfer.files;
-    }
+    function sync() {
+        // keep the real input in step so the form posts every file
+        const dt = new DataTransfer();
+        items.forEach(i => dt.items.add(i.file));
+        input.files = dt.files;
 
-    function syncMetaInputs() {
-        imageMetaInputs.innerHTML = "";
+        meta.innerHTML = items.map((i, n) =>
+            `<input type="hidden" name="ImagePositions[${n}].X" value="${i.x}" />
+             <input type="hidden" name="ImagePositions[${n}].Y" value="${i.y}" />`).join('');
 
-        imageItems.forEach((item, index) => {
-            const xInput = document.createElement("input");
-            xInput.type = "hidden";
-            xInput.name = `Input.ImageCropPositions[${index}].X`;
-            xInput.value = item.positionX;
+        strip.innerHTML = '';
+        items.forEach(item => {
+            const slot = document.createElement('div');
+            slot.className = 'portal-image-slot portal-image-slot--clickable';
 
-            const yInput = document.createElement("input");
-            yInput.type = "hidden";
-            yInput.name = `Input.ImageCropPositions[${index}].Y`;
-            yInput.value = item.positionY;
+            const img = document.createElement('img');
+            img.className = 'portal-image-thumb';
+            img.src = item.url;
+            img.alt = '';
+            img.style.objectPosition = `${item.x}% ${item.y}%`;
 
-            imageMetaInputs.appendChild(xInput);
-            imageMetaInputs.appendChild(yInput);
-        });
-    }
-
-    function openPicker() {
-        fileInput.click();
-    }
-
-    function render() {
-        imageStrip.innerHTML = "";
-
-        imageItems.forEach((item, index) => {
-            const slot = document.createElement("div");
-            slot.className = "portal-image-slot";
-
-            const img = document.createElement("img");
-            img.className = "portal-image-thumb";
-            img.src = item.previewUrl;
-            img.alt = `Afbeelding ${index + 1}`;
-            img.style.objectPosition = `${item.positionX}% ${item.positionY}%`;
-
-            const removeBtn = document.createElement("button");
-            removeBtn.type = "button";
-            removeBtn.className = "portal-image-remove-btn";
-            removeBtn.setAttribute("aria-label", `Afbeelding ${index + 1} verwijderen`);
-            removeBtn.textContent = "×";
-            removeBtn.addEventListener("click", () => {
-                URL.revokeObjectURL(item.previewUrl);
-                imageItems.splice(index, 1);
-                syncFileInput();
-                syncMetaInputs();
-                render();
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'portal-image-remove-btn';
+            remove.setAttribute('aria-label', 'Verwijderen');
+            remove.textContent = '×';
+            remove.addEventListener('click', e => {
+                e.stopPropagation();
+                URL.revokeObjectURL(item.url);
+                items.splice(items.indexOf(item), 1);
+                sync();
             });
 
-            const positionBtn = document.createElement("button");
-            positionBtn.type = "button";
-            positionBtn.className = "portal-image-position-btn";
-            positionBtn.textContent = "Verplaats";
-            positionBtn.addEventListener("click", () => {
-                editingIndex = index;
-
-                if (previewImage) {
-                    previewImage.src = item.previewUrl;
-                    previewImage.style.objectPosition = `${item.positionX}% ${item.positionY}%`;
-                }
-
-                if (positionXRange) {
-                    positionXRange.value = item.positionX;
-                }
-
-                if (positionYRange) {
-                    positionYRange.value = item.positionY;
-                }
-
-                if (modal) {
-                    modal.hidden = false;
-                }
-            });
-
-            slot.appendChild(img);
-            slot.appendChild(removeBtn);
-            slot.appendChild(positionBtn);
-            imageStrip.appendChild(slot);
+            slot.addEventListener('click', () => openModal(item));
+            slot.append(img, remove);
+            strip.appendChild(slot);
         });
 
-        const emptyCount = Math.max(0, maxImages - imageItems.length);
-
-        for (let i = 0; i < emptyCount; i++) {
-            const emptySlot = document.createElement("button");
-            emptySlot.type = "button";
-            emptySlot.className = "portal-image-slot portal-image-slot--empty";
-            emptySlot.setAttribute("aria-label", "Afbeelding toevoegen");
-            emptySlot.innerHTML = `<span class="portal-image-slot-plus">+</span>`;
-            emptySlot.addEventListener("click", openPicker);
-            imageStrip.appendChild(emptySlot);
+        shell.hidden = items.length === 0;
+        addBtn.disabled = items.length >= MAX;
+        document.getElementById('image-count').textContent = `${items.length}/${MAX}`;
+    }
+    function addFiles(files) {
+        for (const file of files) {
+            if (items.length >= MAX) break;
+            if (!file.type.startsWith('image/')) continue;
+            items.push({ file, url: URL.createObjectURL(file), x: 50, y: 50 });
         }
+        sync();
     }
 
-    function updatePreviewPosition() {
-        if (!previewImage || !positionXRange || !positionYRange) {
-            return;
-        }
+    input.addEventListener('change', () => addFiles(input.files));
 
-        previewImage.style.objectPosition = `${positionXRange.value}% ${positionYRange.value}%`;
-    }
+    const zone = document.querySelector('.portal-image-upload');
 
-    fileInput.addEventListener("change", (event) => {
-        const selectedFiles = Array.from(event.target.files || []);
-        if (selectedFiles.length === 0) {
-            return;
-        }
-
-        const availableSlots = maxImages - imageItems.length;
-        const filesToAdd = selectedFiles.slice(0, availableSlots);
-
-        filesToAdd.forEach(file => {
-            imageItems.push({
-                file,
-                previewUrl: URL.createObjectURL(file),
-                positionX: 50,
-                positionY: 50
-            });
-        });
-
-        syncFileInput();
-        syncMetaInputs();
-        render();
+    zone.addEventListener('dragover', e => {
+        e.preventDefault(); // required, otherwise drop never fires
+        zone.classList.add('portal-image-upload--dragover');
     });
 
-    if (positionXRange) {
-        positionXRange.addEventListener("input", updatePreviewPosition);
+    zone.addEventListener('dragleave', e => {
+        if (!zone.contains(e.relatedTarget)) {
+            zone.classList.remove('portal-image-upload--dragover');
+        }
+    });
+
+    zone.addEventListener('drop', e => {
+        e.preventDefault();
+        zone.classList.remove('portal-image-upload--dragover');
+        addFiles(e.dataTransfer.files);
+    });
+
+    function openModal(item) {
+        editing = item;
+        preview.src = item.url;
+        rx.value = item.x;
+        ry.value = item.y;
+        updatePreview();
+        modal.hidden = false;
     }
 
-    if (positionYRange) {
-        positionYRange.addEventListener("input", updatePreviewPosition);
-    }
+    function closeModal() { modal.hidden = true; editing = null; }
+    function updatePreview() { preview.style.objectPosition = `${rx.value}% ${ry.value}%`; }
 
-    if (savePositionBtn) {
-        savePositionBtn.addEventListener("click", () => {
-            if (editingIndex < 0 || !imageItems[editingIndex]) {
-                return;
-            }
+    rx.addEventListener('input', updatePreview);
+    ry.addEventListener('input', updatePreview);
 
-            imageItems[editingIndex].positionX = Number(positionXRange.value);
-            imageItems[editingIndex].positionY = Number(positionYRange.value);
-
-            syncMetaInputs();
-            render();
-
-            if (modal) {
-                modal.hidden = true;
-            }
-
-            editingIndex = -1;
-        });
-    }
-
-    if (closeModalBtn) {
-        closeModalBtn.addEventListener("click", () => {
-            if (modal) {
-                modal.hidden = true;
-            }
-
-            editingIndex = -1;
-        });
-    }
-
-    if (modal) {
-        modal.addEventListener("click", (event) => {
-            if (event.target === modal) {
-                modal.hidden = true;
-                editingIndex = -1;
-            }
-        });
-    }
-
-    render();
-});
+    $('save-image-position').addEventListener('click', () => {
+        if (editing) { editing.x = +rx.value; editing.y = +ry.value; }
+        closeModal();
+        sync();
+    });
+    $('close-image-modal').addEventListener('click', closeModal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+})();
