@@ -23,12 +23,21 @@
             <div asp-validation-summary="ModelOnly" class="portal-validation-summary"></div>
 
             <div class="portal-form-grid">
+
+                <div class="portal-form-group--full">
+                    <h2>Evenement naam</h2>
+                </div>
+
+
                 <div class="portal-form-group">
-                    <label asp-for="Input.EventName">Evenement naam</label>
+                    <!--
+                        <label asp-for="Input.EventName">Evenement naam</label>
+                    -->
                     <input asp-for="Input.EventName" />
                     <span asp-validation-for="Input.EventName"></span>
                 </div>
 
+                <!-- 
                 <div class="portal-form-group">
                     <label asp-for="Input.IndoorsOutdoors">@EventApp.OrganiserPortal.Models.IndoorsOutdoors.MESSAGES_NATURAL_LIST</label>
                     <select asp-for="Input.IndoorsOutdoors">
@@ -40,6 +49,36 @@
                     </select>
                     <span asp-validation-for="Input.IndoorsOutdoors"></span>
                 </div>
+                -->
+                <div class="portal-form-group--full">
+                    <h2>Datum - Tijd</h2>
+                </div>
+
+                <div class="portal-form-group--full">
+                    <div class="portal-form-grid">
+                        <div class="portal-form-group">
+                            <label>Start datum</label>
+                            <input type="date"/>
+                        </div>
+
+                        <div class="portal-form-group">
+                            <label>Start tijd</label>
+                            <input type="time"/>
+                        </div>
+
+                        <div class="portal-form-group">
+                            <label>Eind datum</label>
+                            <input type="date"/>
+                        </div>
+
+                        <div class="portal-form-group">
+                            <label>Eind tijd</label>
+                            <input type="time"/>
+                        </div>
+                    </div>
+                </div>
+
+
 
                 <div class="portal-form-group portal-form-group--full">
                     <label asp-for="Input.Description">Beschrijving</label>
