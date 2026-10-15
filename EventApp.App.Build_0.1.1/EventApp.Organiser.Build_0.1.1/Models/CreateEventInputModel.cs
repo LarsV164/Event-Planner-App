@@ -73,6 +73,7 @@ namespace EventApp.OrganiserPortal.Models
         [Display(Name = "Eindtijd")]
         public TimeSpan? EndTime { get; set; }
 
+        [Required(ErrorMessage = "Geef aan of het geschikt is voor kinderen")]
         [Display(Name = "Geschikt voor kinderen")]
         public bool? ChildrenFriendly { get; set; }
     }

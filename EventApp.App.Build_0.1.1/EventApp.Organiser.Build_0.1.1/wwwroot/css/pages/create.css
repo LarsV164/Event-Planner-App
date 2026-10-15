@@ -91,6 +91,11 @@
     background-size: 12px 8px;
     cursor: pointer;
 }
+.portal-form-group input[data-val-required],
+.portal-form-group select[data-val-required],
+.portal-form-group textarea[data-val-required] {
+    border: 2px solid rgba(124, 92, 255, 0.7);
+}
 
 .portal-form-group textarea {
     min-height: 140px;
