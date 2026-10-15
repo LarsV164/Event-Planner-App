@@ -8,26 +8,20 @@ namespace EventApp.OrganiserPortal.Models
         [Required(ErrorMessage = "Naam van het evenement is verplicht.")]
         public string EventName { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Kies Binnen, Buiten of Beide.")]
         [RegularExpression("Binnen|Buiten|Beide", ErrorMessage = "Kies Binnen, Buiten of Beide.")]
-        public string IndoorsOutdoors { get; set; } = string.Empty;
+        public string? IndoorsOutdoors { get; set; }
 
         [Required(ErrorMessage = "Beschrijving is verplicht.")]
         public string Description { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Adres is verplicht.")]
-        public string Address { get; set; } = string.Empty;
+        public string? Address { get; set; }
 
-        [Required(ErrorMessage = "Kies een locatie op de kaart.")]
         public decimal? Latitude { get; set; }
 
-        [Required(ErrorMessage = "Kies een locatie op de kaart.")]
         public decimal? Longitude { get; set; }
 
-        [Required(ErrorMessage = "Geef aan of er staanplaatsen zijn.")]
         public bool? HasStandingPlaces { get; set; }
 
-        [Required(ErrorMessage = "Geef aan of er zitplaatsen zijn.")]
         public bool? HasSittingPlaces { get; set; }
 
         [Required(ErrorMessage = "Geef aan of er invalidenparkeerplaatsen zijn.")]
@@ -48,8 +42,10 @@ namespace EventApp.OrganiserPortal.Models
         [Required, Display(Name = "Straat")]
         public string Street { get; set; } = "";
 
-        [Required, Display(Name = "Huisnummer")]
-        public string HouseNumber { get; set; } = "";
+        [Required(ErrorMessage = "Huisnummer is verplicht")]
+        [Display(Name = "Huisnummer")]
+        [Range(1, int.MaxValue, ErrorMessage = "Voer een geldig huisnummer in")]
+        public int? HouseNumber { get; set; }
 
         [Display(Name = "Toevoeging")]
         public string? HouseNumberAddition { get; set; }
@@ -60,5 +56,24 @@ namespace EventApp.OrganiserPortal.Models
 
         [Required, Display(Name = "Plaats")]
         public string City { get; set; } = "";
+
+        [Required(ErrorMessage = "Startdatum is verplicht.")]
+        [Display(Name = "Startdatum")]
+        public DateTime? StartDate { get; set; }
+
+        [Required(ErrorMessage = "Starttijd is verplicht.")]
+        [Display(Name = "Starttijd")]
+        public TimeSpan? StartTime { get; set; }
+
+        [Required(ErrorMessage = "Einddatum is verplicht.")]
+        [Display(Name = "Einddatum")]
+        public DateTime? EndDate { get; set; }
+
+        [Required(ErrorMessage = "Eindtijd is verplicht.")]
+        [Display(Name = "Eindtijd")]
+        public TimeSpan? EndTime { get; set; }
+
+        [Display(Name = "Geschikt voor kinderen")]
+        public bool? ChildrenFriendly { get; set; }
     }
 }

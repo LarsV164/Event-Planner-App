@@ -61,7 +61,9 @@ namespace EventApp.OrganiserPortal.Repositories
                 {
                     EventId = reader.GetInt32(reader.GetOrdinal("event_id")),
                     EventName = reader.GetString(reader.GetOrdinal("event_name")),
-                    IndoorsOutdoors = IndoorsOutdoors.GetMessage(reader.GetInt32(reader.GetOrdinal("indoors_outdoors"))),
+                    IndoorsOutdoors = reader.IsDBNull(reader.GetOrdinal("indoors_outdoors"))
+                        ? string.Empty
+                        : IndoorsOutdoors.GetMessage(reader.GetInt32(reader.GetOrdinal("indoors_outdoors"))),
                     Description = reader.IsDBNull(reader.GetOrdinal("description"))
                         ? string.Empty
                         : reader.GetString(reader.GetOrdinal("description")),
@@ -108,6 +110,7 @@ namespace EventApp.OrganiserPortal.Repositories
 
                 await InsertLocationAsync(connection, transaction, locationId, input);
                 await InsertEventAsync(connection, transaction, eventId, locationId, organiserId, input);
+                await InsertEventDatesAsync(connection, transaction, eventId, input);
                 await InsertTicketsAsync(connection, transaction, eventId, input);
                 await InsertAccessibilityOptionsAsync(connection, transaction, eventId, input);
                 await InsertCategoriesAsync(connection, transaction, eventId, input);
@@ -176,7 +179,9 @@ namespace EventApp.OrganiserPortal.Repositories
             return new CreateEventInputModel
             {
                 EventName = reader.GetString(reader.GetOrdinal("event_name")),
-                IndoorsOutdoors = IndoorsOutdoors.GetMessage(reader.GetInt32(reader.GetOrdinal("indoors_outdoors"))),
+                IndoorsOutdoors = reader.IsDBNull(reader.GetOrdinal("indoors_outdoors"))
+                    ? null
+                    : IndoorsOutdoors.GetMessage(reader.GetInt32(reader.GetOrdinal("indoors_outdoors"))),
                 Description = reader.IsDBNull(reader.GetOrdinal("description"))
                     ? string.Empty
                     : reader.GetString(reader.GetOrdinal("description")),
@@ -218,7 +223,9 @@ namespace EventApp.OrganiserPortal.Repositories
                     eventCommand.Parameters.AddWithValue("@OrganiserId", organiserId);
                     eventCommand.Parameters.AddWithValue("@EventId", eventId);
                     eventCommand.Parameters.AddWithValue("@EventName", input.EventName);
-                    eventCommand.Parameters.AddWithValue("@IndoorsOutdoors", IndoorsOutdoors.GetValue(input.IndoorsOutdoors));
+                    eventCommand.Parameters.AddWithValue("@IndoorsOutdoors", string.IsNullOrWhiteSpace(input.IndoorsOutdoors)
+                        ? DBNull.Value
+                        : IndoorsOutdoors.GetValue(input.IndoorsOutdoors));
                     eventCommand.Parameters.AddWithValue("@Description", string.IsNullOrWhiteSpace(input.Description) ? DBNull.Value : input.Description);
                     eventCommand.Parameters.AddWithValue("@HasStandingPlaces", (object?)input.HasStandingPlaces ?? DBNull.Value);
                     eventCommand.Parameters.AddWithValue("@HasSittingPlaces", (object?)input.HasSittingPlaces ?? DBNull.Value);
@@ -237,12 +244,16 @@ namespace EventApp.OrganiserPortal.Repositories
                     var latitudeParameter = locationCommand.Parameters.Add("@Latitude", SqlDbType.Decimal);
                     latitudeParameter.Precision = 9;
                     latitudeParameter.Scale = 6;
-                    latitudeParameter.Value = Math.Round(input.Latitude!.Value, 6);
+                    latitudeParameter.Value = input.Latitude.HasValue
+                        ? Math.Round(input.Latitude.Value, 6)
+                        : DBNull.Value;
 
                     var longitudeParameter = locationCommand.Parameters.Add("@Longitude", SqlDbType.Decimal);
                     longitudeParameter.Precision = 9;
                     longitudeParameter.Scale = 6;
-                    longitudeParameter.Value = Math.Round(input.Longitude!.Value, 6);
+                    longitudeParameter.Value = input.Longitude.HasValue
+                        ? Math.Round(input.Longitude.Value, 6)
+                        : DBNull.Value;
 
                     await locationCommand.ExecuteNonQueryAsync();
                 }
@@ -286,20 +297,28 @@ namespace EventApp.OrganiserPortal.Repositories
         {
             await using var command = new SqlCommand(OrganiserQueries.InsertLocation, connection, transaction);
 
-            var latitude = Math.Round(input.Latitude!.Value, 6);
-            var longitude = Math.Round(input.Longitude!.Value, 6);
-
             command.Parameters.AddWithValue("@LocationId", locationId);
 
             var latitudeParameter = command.Parameters.Add("@Latitude", SqlDbType.Decimal);
             latitudeParameter.Precision = 9;
             latitudeParameter.Scale = 6;
-            latitudeParameter.Value = latitude;
+            latitudeParameter.Value = input.Latitude.HasValue
+                ? Math.Round(input.Latitude.Value, 6)
+                : DBNull.Value;
 
             var longitudeParameter = command.Parameters.Add("@Longitude", SqlDbType.Decimal);
             longitudeParameter.Precision = 9;
             longitudeParameter.Scale = 6;
-            longitudeParameter.Value = longitude;
+            longitudeParameter.Value = input.Longitude.HasValue
+                ? Math.Round(input.Longitude.Value, 6)
+                : DBNull.Value;
+
+            // Add address parameters
+            command.Parameters.AddWithValue("@Street", string.IsNullOrWhiteSpace(input.Street) ? DBNull.Value : input.Street);
+            command.Parameters.AddWithValue("@HouseNumber", (object?)input.HouseNumber ?? DBNull.Value);
+            command.Parameters.AddWithValue("@HouseNumberAddition", string.IsNullOrWhiteSpace(input.HouseNumberAddition) ? DBNull.Value : input.HouseNumberAddition);
+            command.Parameters.AddWithValue("@PostalCode", string.IsNullOrWhiteSpace(input.PostalCode) ? DBNull.Value : input.PostalCode);
+            command.Parameters.AddWithValue("@City", string.IsNullOrWhiteSpace(input.City) ? DBNull.Value : input.City);
 
             await command.ExecuteNonQueryAsync();
         }
@@ -315,7 +334,9 @@ namespace EventApp.OrganiserPortal.Repositories
             await using var command = new SqlCommand(OrganiserQueries.InsertEvent, connection, transaction);
             command.Parameters.AddWithValue("@EventId", eventId);
             command.Parameters.AddWithValue("@EventName", input.EventName);
-            command.Parameters.AddWithValue("@IndoorsOutdoors", IndoorsOutdoors.GetValue(input.IndoorsOutdoors));
+            command.Parameters.AddWithValue("@IndoorsOutdoors", string.IsNullOrWhiteSpace(input.IndoorsOutdoors)
+                ? DBNull.Value
+                : IndoorsOutdoors.GetValue(input.IndoorsOutdoors));
             command.Parameters.AddWithValue("@HasStandingPlaces", (object?)input.HasStandingPlaces ?? DBNull.Value);
             command.Parameters.AddWithValue("@HasSittingPlaces", (object?)input.HasSittingPlaces ?? DBNull.Value);
             command.Parameters.AddWithValue("@DisabledParkingAvailable", (object?)input.DisabledParkingAvailable ?? DBNull.Value);
@@ -324,6 +345,22 @@ namespace EventApp.OrganiserPortal.Repositories
             command.Parameters.AddWithValue("@LocationId", locationId);
             command.Parameters.AddWithValue("@Description", string.IsNullOrWhiteSpace(input.Description) ? DBNull.Value : input.Description);
             command.Parameters.AddWithValue("@OrganiserId", organiserId);
+            command.Parameters.AddWithValue("@ChildrenFriendly", (object?)input.ChildrenFriendly ?? DBNull.Value);
+            await command.ExecuteNonQueryAsync();
+        }
+
+        private static async Task InsertEventDatesAsync(
+            SqlConnection connection,
+            SqlTransaction transaction,
+            int eventId,
+            CreateEventInputModel input)
+        {
+            await using var command = new SqlCommand(OrganiserQueries.InsertEventDates, connection, transaction);
+            command.Parameters.AddWithValue("@EventId", eventId);
+            command.Parameters.AddWithValue("@StartDate", (object?)input.StartDate?.Date ?? DBNull.Value);
+            command.Parameters.AddWithValue("@EndDate", (object?)input.EndDate?.Date ?? DBNull.Value);
+            command.Parameters.AddWithValue("@StartTime", (object?)input.StartTime ?? DBNull.Value);
+            command.Parameters.AddWithValue("@EndTime", (object?)input.EndTime ?? DBNull.Value);
             await command.ExecuteNonQueryAsync();
         }
 

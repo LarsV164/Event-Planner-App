@@ -88,12 +88,22 @@ FROM dbo.event_images;";
 INSERT INTO dbo.locations (
     location_id,
     latitude,
-    longitude
+    longitude,
+    street,
+    house_number,
+    house_number_addition,
+    postal_code,
+    city
 )
 VALUES (
     @LocationId,
     @Latitude,
-    @Longitude
+    @Longitude,
+    @Street,
+    @HouseNumber,
+    @HouseNumberAddition,
+    @PostalCode,
+    @City
 );";
 
         public const string InsertEvent = @"
@@ -109,6 +119,7 @@ INSERT INTO dbo.events (
     location_id,
     description,
     organiser_id,
+    children_friendly,
     canceled
 )
 VALUES (
@@ -123,6 +134,7 @@ VALUES (
     @LocationId,
     @Description,
     @OrganiserId,
+    @ChildrenFriendly,
     0
 );";
 
@@ -137,6 +149,22 @@ VALUES (
     @EventTicketPriceId,
     @TicketType,
     @Price,
+    @EventId
+);";
+
+        public const string InsertEventDates = @"
+INSERT INTO dbo.event_dates (
+    start_date,
+    end_date,
+    start_time,
+    end_time,
+    event_id
+)
+VALUES (
+    @StartDate,
+    @EndDate,
+    @StartTime,
+    @EndTime,
     @EventId
 );";
 

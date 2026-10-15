@@ -23,8 +23,8 @@
         input.files = dt.files;
 
         meta.innerHTML = items.map((i, n) =>
-            `<input type="hidden" name="ImagePositions[${n}].X" value="${i.x}" />
-             <input type="hidden" name="ImagePositions[${n}].Y" value="${i.y}" />`).join('');
+            `<input type="hidden" name="Input.ImageCropPositions[${n}].X" value="${i.x}" />
+             <input type="hidden" name="Input.ImageCropPositions[${n}].Y" value="${i.y}" />`).join('');
 
         strip.innerHTML = '';
         items.forEach(item => {

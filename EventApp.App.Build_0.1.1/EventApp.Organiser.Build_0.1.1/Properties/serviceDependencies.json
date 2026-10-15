@@ -5,8 +5,7 @@
     },
     "mssql1": {
       "type": "mssql",
-      "connectionId": "ConnectionStrings:db-eventapp",
-      "dynamicId": null
+      "connectionId": "ConnectionStrings:db-eventapp"
     }
   }
 }

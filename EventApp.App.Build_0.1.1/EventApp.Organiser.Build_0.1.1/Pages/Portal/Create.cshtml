@@ -20,7 +20,7 @@
         <p>Vul alle verplichte velden in.</p>
 
         <form method="post" enctype="multipart/form-data" class="portal-form">
-            <div asp-validation-summary="ModelOnly" class="portal-validation-summary"></div>
+            <div asp-validation-summary="All" class="portal-validation-summary"></div>
 
             <div class="portal-form-grid">
 
@@ -42,22 +42,6 @@
                     <span asp-validation-for="Input.EventName"></span>
                 </div>
 
-                <!-- BINNEN / BUITEN DROPDOWN 
-
-                    <div class="portal-form-group">
-                        <label asp-for="Input.IndoorsOutdoors">@EventApp.OrganiserPortal.Models.IndoorsOutdoors.MESSAGES_NATURAL_LIST</label>
-                        <select asp-for="Input.IndoorsOutdoors">
-                            <option value="">Kies...</option>
-                            @foreach (var message in EventApp.OrganiserPortal.Models.IndoorsOutdoors.MESSAGES)
-                            {
-                            <option value=@message>@message</option>
-                            }
-                        </select>
-                        <span asp-validation-for="Input.IndoorsOutdoors"></span>
-                    </div>
-
-                -->
-
                 <!-- ORGINELE BESCHRIJVING VELD
 
                     <div class="portal-form-group portal-form-group--full">
@@ -77,23 +61,27 @@
                 <div class="portal-form-group--full">
                     <div class="portal-form-grid">
                         <div class="portal-form-group">
-                            <label>Start datum</label>
-                            <input type="date"/>
+                            <label asp-for="Input.StartDate"></label>
+                            <input asp-for="Input.StartDate" type="date" />
+                            <span asp-validation-for="Input.StartDate"></span>
                         </div>
 
                         <div class="portal-form-group">
-                            <label>Start tijd</label>
-                            <input type="time"/>
+                            <label asp-for="Input.StartTime"></label>
+                            <input asp-for="Input.StartTime" type="time" />
+                            <span asp-validation-for="Input.StartTime"></span>
                         </div>
 
                         <div class="portal-form-group">
-                            <label>Eind datum</label>
-                            <input type="date"/>
+                            <label asp-for="Input.EndDate"></label>
+                            <input asp-for="Input.EndDate" type="date" />
+                            <span asp-validation-for="Input.EndDate"></span>
                         </div>
 
                         <div class="portal-form-group">
-                            <label>Eind tijd</label>
-                            <input type="time"/>
+                            <label asp-for="Input.EndTime"></label>
+                            <input asp-for="Input.EndTime" type="time" />
+                            <span asp-validation-for="Input.EndTime"></span>
                         </div>
                     </div>
                 </div>
@@ -141,41 +129,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- ORGINELE 1 REGEL ADRES
-
-                    <div class="portal-form-group portal-form-group--full">
-                        <label asp-for="Input.Address">Adres</label>
-                        <div class="portal-address-row">
-                            <input asp-for="Input.Address"
-                                   id="address-input"
-                                   placeholder="Typ een adres of plaats een pin op de kaart" />
-                            <button type="button" id="resolve-address-btn" class="portal-secondary-link">Zoek adres</button>
-                        </div>
-                        <span asp-validation-for="Input.Address"></span>
-                    </div>
-
-                -->
-                
-                <!-- ORGINELE KAART
-
-                    <div class="portal-form-group portal-form-group--full">
-                        <label>Locatie kiezen</label>
-                        <div class="portal-map-picker">
-                            <div id="event-location-map" class="portal-map-canvas"></div>
-                        </div>
-                        <p class="portal-map-help">
-                            Plaats een pin op de kaart of typ een adres. De dichtstbijzijnde match wordt automatisch gekozen.
-                        </p>
-                        <div id="map-status" class="portal-map-status" aria-live="polite"></div>
-                        <span asp-validation-for="Input.Latitude"></span>
-                        <span asp-validation-for="Input.Longitude"></span>
-                    </div>
-
-                    <input asp-for="Input.Latitude" type="hidden" id="latitude-input" />
-                    <input asp-for="Input.Longitude" type="hidden" id="longitude-input" />
-
-                -->
 
                 <!-- MEDIA -->
 
@@ -335,26 +288,20 @@
                     </div>
                 </div>
 
+                <!-- CATEGRIEN-->
 
-
-                <div class="portal-form-group">
-                    <label asp-for="Input.HasStandingPlaces">Staanplaatsen aanwezig</label>
-                    <select asp-for="Input.HasStandingPlaces">
-                        <option value="">Kies...</option>
-                        <option value="true">Ja</option>
-                        <option value="false">Nee</option>
-                    </select>
-                    <span asp-validation-for="Input.HasStandingPlaces"></span>
+                <div class="portal-form-group--full">
+                    <h2>Categorien</h2>
                 </div>
 
                 <div class="portal-form-group">
-                    <label asp-for="Input.HasSittingPlaces">Zitplaatsen aanwezig</label>
-                    <select asp-for="Input.HasSittingPlaces">
+                    <label asp-for="Input.ChildrenFriendly">Geschikt voor kinderen</label>
+                    <select asp-for="Input.ChildrenFriendly">
                         <option value="">Kies...</option>
                         <option value="true">Ja</option>
                         <option value="false">Nee</option>
                     </select>
-                    <span asp-validation-for="Input.HasSittingPlaces"></span>
+                    <span asp-validation-for="Input.ChildrenFriendly"></span>
                 </div>
 
                 <div class="portal-form-group">
@@ -386,6 +333,8 @@
                     </select>
                     <span asp-validation-for="Input.WheelchairAccessibleToilet"></span>
                 </div>
+
+                <!-- OUDE CATEGORIE 
 
                 <div class="portal-form-group portal-form-group--full">
                     <label for="categories-input">Categorieën</label>
@@ -425,7 +374,7 @@
                             }
                         }
                     </div>
-                </div>
+                </div> -->
             </div>
 
             <div class="portal-form-actions">
@@ -439,11 +388,6 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-            crossorigin=""></script>
-
-    <script src="~/js/create-event-map.js" asp-append-version="true"></script>
     <script src="~/js/image-upload-strip.js" asp-append-version="true"></script>
 
     <script>
