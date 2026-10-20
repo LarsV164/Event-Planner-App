@@ -7,7 +7,7 @@ namespace EventApp.OrganiserPortal.Models
         [Required(ErrorMessage = "Ticketsoort is verplicht.")]
         public string TicketType { get; set; } = string.Empty;
 
-        [Range(0, 999999)]
+        [Range(typeof(decimal), "0", "999999")]
         public decimal Price { get; set; }
 
         [Required(ErrorMessage = "Aantal is verplicht")]
