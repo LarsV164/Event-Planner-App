@@ -42,7 +42,7 @@ namespace EventApp.Web.Repositories
                         : reader["image_url"]?.ToString() ?? "/uploads/events/placeholder.jpg",
                     MinPrice = reader.GetDecimal(reader.GetOrdinal("min_price")),
                     RatingValue = ratingValue,
-                    RatingText = GetRatingText(ratingValue),
+                    //RatingText = GetRatingText(ratingValue),
                     IsAdultsOnly = GetIsAdultsOnly(eventName, categories),
                     Categories = categories,
                     AccessibilityText = reader["accessibility_text"] == DBNull.Value
@@ -103,7 +103,7 @@ namespace EventApp.Web.Repositories
                         : reader["image_url"]?.ToString() ?? "/uploads/events/placeholder.jpg.svg",
                     MinPrice = reader.GetDecimal(reader.GetOrdinal("min_price")),
                     RatingValue = ratingValue,
-                    RatingText = GetRatingText(ratingValue),
+                    //RatingText = GetRatingText(ratingValue),
                     IsAdultsOnly = GetIsAdultsOnly(eventName, categories),
                     Categories = categories,
                     AccessibilityText = reader["accessibility_text"] == DBNull.Value
@@ -134,17 +134,17 @@ namespace EventApp.Web.Repositories
             return 3;
         }
 
-        private static string GetRatingText(int ratingValue)
-        {
-            return ratingValue switch
-            {
-                5 => "Uitstekend",
-                4 => "Heel goed",
-                3 => "Goed",
-                2 => "Matig",
-                _ => "Onbekend"
-            };
-        }
+        //private static string GetRatingText(int ratingValue)
+        //{
+        //    return ratingValue switch
+        //    {
+        //        5 => "Uitstekend",
+        //        4 => "Heel goed",
+        //        3 => "Goed",
+        //        2 => "Matig",
+        //        _ => "Onbekend"
+        //    };
+        //}
 
         private static bool GetIsAdultsOnly(string eventName, List<string> categories)
         {
