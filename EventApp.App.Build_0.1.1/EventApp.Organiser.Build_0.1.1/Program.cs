@@ -1,10 +1,13 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
 using EventApp.OrganiserPortal.Repositories;
+using EventApp.OrganiserPortal.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
 builder.Services.AddScoped<IOrganiserRepository, SqlOrganiserRepository>();
+builder.Services.AddScoped<ITicketValidationService, TicketValidationService>();
+
 
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
