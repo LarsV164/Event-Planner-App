@@ -34,6 +34,9 @@ namespace EventApp.OrganiserPortal.Pages.Portal
         [BindProperty]
         public List<IFormFile> Images { get; set; } = new();
 
+        [BindProperty]
+        public List<IFormFile> Attachments { get; set; } = new();
+
         public List<SelectListItem> TicketTypeOptions { get; set; } = new();
 
         private void LoadTicketTypes()
@@ -76,7 +79,7 @@ namespace EventApp.OrganiserPortal.Pages.Portal
 
             if (!Images.Any())
             {
-                ModelState.AddModelError(string.Empty, "Upload minimaal één afbeelding.");
+                ModelState.AddModelError(nameof(Images), "Upload minimaal één afbeelding.");
             }
 
             if (!ModelState.IsValid)

@@ -318,3 +318,67 @@ textarea.input-validation-error {
         width: 100%;
     }
 }
+
+.portal-extras-divider {
+    width: 100%;
+    margin: 18px 0 24px;
+    border: 0;
+    border-top: 1px solid rgba(124, 92, 255, 0.45);
+}
+
+.portal-extra-help {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+.portal-extras {
+    margin-top: 18px;
+    padding-top: 22px;
+    border-top: 1px solid rgba(124, 92, 255, 0.45);
+}
+
+.portal-extras-heading {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    list-style: none;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+    .portal-extras-heading::-webkit-details-marker {
+        display: none;
+    }
+
+    .portal-extras-heading::marker {
+        content: "";
+    }
+
+    .portal-extras-heading::after {
+        content: "";
+        width: 10px;
+        height: 10px;
+        margin-right: 4px;
+        flex-shrink: 0;
+        border-right: 2px solid currentColor;
+        border-bottom: 2px solid currentColor;
+        transform: rotate(45deg);
+        transition: transform 0.2s ease;
+    }
+
+.portal-extras[open] > .portal-extras-heading::after {
+    transform: rotate(225deg);
+}
+
+    .portal-extras-heading:focus-visible {
+        outline: 2px solid #9278ff;
+        outline-offset: 6px;
+    }
+
+.portal-extras-content {
+    margin-top: 20px;
+}

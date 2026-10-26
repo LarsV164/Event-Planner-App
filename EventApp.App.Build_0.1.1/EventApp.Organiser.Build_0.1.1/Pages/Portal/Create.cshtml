@@ -17,8 +17,7 @@
 <div class="portal-shell">
     <div class="portal-form-card">
         <h1>Evenement aanmaken</h1>
-        <p>Vul alle verplichte velden in.</p>
-        <p>Verplichte velden zijn gemarkeerd.</p>
+        <p>Gemarkeerde velden en velden met een * zijn verplicht.</p>
 
         <form method="post" enctype="multipart/form-data" class="portal-form">
             <!-- DIT ZORGT VOOR DUBBELE ERRORS
@@ -35,7 +34,7 @@
 
                 <div class="portal-form-group">
 
-                    <label asp-for="Input.EventName">Evenement naam *</label>
+                    <label asp-for="Input.EventName">Evenement naam*</label>
                     <input asp-for="Input.EventName" />
                     <span asp-validation-for="Input.EventName"></span>
                 </div>
@@ -182,6 +181,7 @@
                     </div>
 
                     <div id="image-meta-inputs"></div>
+                    <span asp-validation-for="Images"></span>
 
                 </div>
 
@@ -264,7 +264,7 @@
                 <!-- BESCHRIJVING -->
 
                 <div class="portal-form-group--full">
-                    <h2>Beschrijving</h2>
+                    <h2>Beschrijving*</h2>
                 </div>
 
                 <div class="portal-form-group portal-form-group--full">
@@ -297,7 +297,7 @@
                                         </div>
 
                                         <div class="portal-form-group">
-                                            <label asp-for="Input.Tickets[i].Price">Prijs</label>
+                                            <label asp-for="Input.Tickets[i].Price">Prijs (€)</label>
                                             <input asp-for="Input.Tickets[i].Price" type="number" step="0.01" min="0" />
                                             <span asp-validation-for="Input.Tickets[i].Price"></span>
                                         </div>
@@ -319,11 +319,11 @@
                 <!-- CATEGRIEN-->
 
                 <div class="portal-form-group--full">
-                    <h2>Categorien</h2>
+                    <h2>Categorieën </h2>
                 </div>
 
                 <div class="portal-form-group">
-                    <label asp-for="Input.ChildrenFriendly">Geschikt voor kinderen</label>
+                    <label asp-for="Input.ChildrenFriendly">Geschikt voor kinderen*</label>
                     <select asp-for="Input.ChildrenFriendly">
                         <option value="">Kies...</option>
                         <option value="true">Ja</option>
@@ -333,7 +333,7 @@
                 </div>
 
                 <div class="portal-form-group">
-                    <label asp-for="Input.DisabledParkingAvailable">Invalidenparkeerplaats aanwezig</label>
+                    <label asp-for="Input.DisabledParkingAvailable">Invalidenparkeerplaats aanwezig*</label>
                     <select asp-for="Input.DisabledParkingAvailable">
                         <option value="">Kies...</option>
                         <option value="true">Ja</option>
@@ -343,7 +343,7 @@
                 </div>
 
                 <div class="portal-form-group">
-                    <label asp-for="Input.DisabledToiletAvailable">Invalidentoilet aanwezig</label>
+                    <label asp-for="Input.DisabledToiletAvailable">Invalidentoilet aanwezig*</label>
                     <select asp-for="Input.DisabledToiletAvailable">
                         <option value="">Kies...</option>
                         <option value="true">Ja</option>
@@ -353,7 +353,7 @@
                 </div>
 
                 <div class="portal-form-group">
-                    <label asp-for="Input.WheelchairAccessibleToilet">Rolstoeltoegankelijk toilet</label>
+                    <label asp-for="Input.WheelchairAccessibleToilet">Rolstoeltoegankelijk toilet*</label>
                     <select asp-for="Input.WheelchairAccessibleToilet">
                         <option value="">Kies...</option>
                         <option value="true">Ja</option>
@@ -403,6 +403,51 @@
                         }
                     </div>
                 </div> -->
+
+                <details class="portal-extras portal-form-group--full" open="@(ViewData.ModelState.IsValid ? null : "open")">
+
+                    <summary class="portal-extras-heading">
+                        Extra's
+                    </summary>
+
+                    <div class="portal-form-grid portal-extras-content">
+
+                        <p class="portal-form-group--full portal-extra-help">
+                            De onderstaande velden zijn optioneel.
+                        </p>
+
+                        <div class="portal-form-group">
+                            <label asp-for="Input.ContactPhone"></label>
+                            <input asp-for="Input.ContactPhone" type="tel" placeholder="Bijvoorbeeld 06 12345678" />
+                            <span asp-validation-for="Input.ContactPhone"></span>
+                        </div>
+
+                        <div class="portal-form-group">
+                            <label asp-for="Input.ContactEmail"></label>
+                            <input asp-for="Input.ContactEmail" type="email" placeholder="Bijvoorbeeld info@evenement.nl" />
+                            <span asp-validation-for="Input.ContactEmail"></span>
+                        </div>
+
+                        <div class="portal-form-group portal-form-group--full">
+                            <label asp-for="Input.WebsiteUrl"></label>
+                            <input asp-for="Input.WebsiteUrl" type="url" placeholder="https://www.voorbeeld.nl" />
+                            <span asp-validation-for="Input.WebsiteUrl"></span>
+                        </div>
+
+                        <div class="portal-form-group portal-form-group--full">
+                            <label asp-for="Attachments">Bijlagen</label>
+                            <input asp-for="Attachments" type="file" multiple aria-describedby="attachments-help" />
+
+                            <p id="attachments-help" class="portal-extra-help">
+                                Voeg eventueel aanvullende bestanden toe,
+                                zoals het programma van het evenement.
+                            </p>
+
+                            <span asp-validation-for="Attachments"></span>
+                        </div>
+
+                    </div>
+                </details>
             </div>
 
             <div class="portal-form-actions">
@@ -434,7 +479,7 @@
                 row.innerHTML = `
                     <div class="three-columns">
                         <div class="portal-form-group">
-                            <label for="Input_Tickets_${index}__TicketType">Ticketsoort</label>
+                            <label for="Input_Tickets_${index}__TicketType">Ticketsoort*</label>
                             <select id="Input_Tickets_${index}__TicketType" name="Input.Tickets[${index}].TicketType">
                                 <option value="">-- Kies een ticketsoort --</option>
                                 <option value="Sta-Ticket">Sta-Ticket</option>
@@ -444,11 +489,11 @@
                             </select>
                         </div>
                         <div class="portal-form-group">
-                            <label for="Input_Tickets_${index}__Price">Prijs</label>
+                            <label for="Input_Tickets_${index}__Price">Prijs (€)*</label>
                             <input id="Input_Tickets_${index}__Price" name="Input.Tickets[${index}].Price" type="number" step="0.01" min="0" value="0" />
                         </div>
                         <div class="portal-form-group">
-                            <label for="Input_Tickets_${index}__Quantity">Aantal beschikbaar</label>
+                            <label for="Input_Tickets_${index}__Quantity">Aantal beschikbaar*</label>
                             <input id="Input_Tickets_${index}__Quantity" name="Input.Tickets[${index}].Quantity" type="number" step="1" min="1" value="1" />
                         </div>
                     </div>
