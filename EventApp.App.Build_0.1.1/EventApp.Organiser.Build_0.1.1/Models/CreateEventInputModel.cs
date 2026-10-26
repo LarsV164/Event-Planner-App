@@ -39,42 +39,60 @@ namespace EventApp.OrganiserPortal.Models
         public List<ImageCropPositionInputModel> ImageCropPositions { get; set; } = new();
 
         //NIEUWE DINGEN TOEGEVOED
-        [Required, Display(Name = "Straat")]
+        [Display(Name = "Straat*")]
+        [Required(ErrorMessage = "Straatnaam is verplicht.")]
         public string Street { get; set; } = "";
 
-        [Required(ErrorMessage = "Huisnummer is verplicht")]
-        [Display(Name = "Huisnummer")]
-        [Range(1, int.MaxValue, ErrorMessage = "Voer een geldig huisnummer in")]
+        [Required(ErrorMessage = "Huisnummer is verplicht.")]
+        [Display(Name = "Huisnummer*")]
+        [Range(1, int.MaxValue, ErrorMessage = "Huisnummer is verplicht")]
         public int? HouseNumber { get; set; }
 
         [Display(Name = "Toevoeging")]
         public string? HouseNumberAddition { get; set; }
 
-        [Required, Display(Name = "Postcode")]
+        [Display(Name = "Postcode*")]
+        [Required(ErrorMessage = "Postcode is verplicht.")]
         [RegularExpression(@"^[1-9][0-9]{3}\s?[A-Za-z]{2}$", ErrorMessage = "Ongeldige postcode")]
         public string PostalCode { get; set; } = "";
 
-        [Required, Display(Name = "Plaats")]
+        [Display(Name = "Plaats*")]
+        [Required(ErrorMessage = "Plaats is verplicht.")]
         public string City { get; set; } = "";
 
+        [Display(Name = "Startdatum*")]
         [Required(ErrorMessage = "Startdatum is verplicht.")]
-        [Display(Name = "Startdatum")]
         public DateTime? StartDate { get; set; }
 
+        [Display(Name = "Starttijd*")]
         [Required(ErrorMessage = "Starttijd is verplicht.")]
-        [Display(Name = "Starttijd")]
         public TimeSpan? StartTime { get; set; }
 
+        [Display(Name = "Einddatum*")]
         [Required(ErrorMessage = "Einddatum is verplicht.")]
-        [Display(Name = "Einddatum")]
         public DateTime? EndDate { get; set; }
 
+        [Display(Name = "Eindtijd*")]
         [Required(ErrorMessage = "Eindtijd is verplicht.")]
-        [Display(Name = "Eindtijd")]
         public TimeSpan? EndTime { get; set; }
 
+        [Display(Name = "Geschikt voor kinderen*")]
         [Required(ErrorMessage = "Geef aan of het geschikt is voor kinderen")]
-        [Display(Name = "Geschikt voor kinderen")]
         public bool? ChildrenFriendly { get; set; }
+
+        [Display(Name = "Telefoonnummer")]
+        [Phone(ErrorMessage = "Vul een geldig telefoonnummer in.")]
+        [StringLength(30, ErrorMessage = "Gebruik maximaal 30 tekens voor het telefoonnummer.")]
+        public string? ContactPhone { get; set; }
+
+        [Display(Name = "E-mailadres")]
+        [EmailAddress(ErrorMessage = "Vul een geldig e-mailadres in.")]
+        [StringLength(254, ErrorMessage = "Gebruik maximaal 254 tekens voor het e-mailadres.")]
+        public string? ContactEmail { get; set; }
+
+        [Display(Name = "Website")]
+        [Url(ErrorMessage = "Vul een geldig websiteadres in, bijvoorbeeld https://www.voorbeeld.nl.")]
+        [StringLength(2048, ErrorMessage = "Het websiteadres is te lang.")]
+        public string? WebsiteUrl { get; set; }
     }
 }
