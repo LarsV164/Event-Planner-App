@@ -1,10 +1,12 @@
 using EventApp.OrganiserPortal.Models;
 using EventApp.OrganiserPortal.Services;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System.ComponentModel.DataAnnotations;
-using Xunit;
 using Moq;
+using System.ComponentModel.DataAnnotations;
+using System.Net.Sockets;
+using Xunit;
 
 namespace EventApp.Organiser.Test
 
@@ -193,7 +195,34 @@ namespace EventApp.Organiser.Test
 
                 // Assert
                 isValid.Should().BeFalse();
+
             }
+
+            //    [Fact]
+            //    public async Task ETP34_AddTicket_ShouldSaveTicket_WhenTicketIsValid()
+            //    {
+            //        // Arrange
+            //        CreateTicketInputModel ticket = new CreateTicketInputModel
+            //        {
+            //            TicketType = "VIP-Ticket",
+            //            Price = 50m,
+            //            Quantity = 10
+            //        };
+
+            //        // Act
+            //        bool result = await _ticketService.AddTicketAsync(ticket);
+
+            //        // Assert
+            //        result.Should().BeTrue();
+
+            //        CreateTicketInputModel? savedTicket = await _context.Tickets
+            //            .FirstOrDefaultAsync(t => t.TicketType == "VIP-Ticket");
+
+            //        savedTicket.Should().NotBeNull();
+            //        savedTicket!.TicketType.Should().Be("VIP-Ticket");
+            //        savedTicket.Price.Should().Be(50m);
+            //        savedTicket.Quantity.Should().Be(10);
+            //    }
         }
     }
 }

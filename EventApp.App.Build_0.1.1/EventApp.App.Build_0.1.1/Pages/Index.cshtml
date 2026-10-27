@@ -40,11 +40,17 @@
                     <div class="EventApp-filter-title EventApp-filter-title-static">Kenmerken</div>
                     <div class="EventApp-boolean-group">
                         <label class="EventApp-checkbox">
-                            <input type="checkbox" id="adults-only-checkbox" />
+                            <input type="checkbox"
+                                   id="adults-only-checkbox"
+                                   name="adultsOnly"
+                                   value="true"
+                                   checked="@(Model.AdultsOnly)" />
                             <span>18+</span>
                         </label>
                     </div>
                 </div>
+
+    
 
                 <div class="EventApp-filter-group">
                     <div class="EventApp-filter-title EventApp-filter-title-static">Datums</div>
