@@ -116,7 +116,7 @@ function buildEventCard(event) {
                         <div class="EventApp-price">${escapeHtml(priceText)}</div>
                         <div class="EventApp-rating">
                             <img class="EventApp-rating-inline-icon" src="/images/icons/img_rating.png" alt="Rating" />
-                            <span>${escapeHtml(event.ratingText || 'Goed')}</span>
+                            <span>${escapeHtml(event.ratingValue ?? 0)}/5</span>
                         </div>
                     </div>
 

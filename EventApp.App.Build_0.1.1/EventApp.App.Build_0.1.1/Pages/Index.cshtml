@@ -53,23 +53,52 @@
                     </div>
                 </div>
 
-                <details class="EventApp-filter-group EventApp-filter-dropdown" open>
-                    <summary class="EventApp-filter-title">
-                        <span>Reviews</span>
-                        <span class="EventApp-chevron" aria-hidden="true"></span>
-                    </summary>
+               <details class="EventApp-filter-group EventApp-filter-dropdown" open>
+    <summary class="EventApp-filter-title">
+        <span>Reviews</span>
+        <span class="EventApp-chevron" aria-hidden="true"></span>
+    </summary>
 
-                    <div class="EventApp-filter-body">
-                        <div class="EventApp-rating-list">
-                            <label><input type="radio" name="rating-filter" value="5" /><span>5</span></label>
-                            <label><input type="radio" name="rating-filter" value="4+" /><span>4+</span></label>
-                            <label><input type="radio" name="rating-filter" value="3+" /><span>3+</span></label>
-                            <label><input type="radio" name="rating-filter" value="2+" /><span>2+</span></label>
-                            <label><input type="radio" name="rating-filter" value="1+" /><span>1+</span></label>
-                            <label><input type="radio" name="rating-filter" value="" /><span>Alles</span></label>
-                        </div>
-                    </div>
-                </details>
+    <div class="EventApp-filter-body">
+        <div class="EventApp-rating-list">
+            <label>
+                <input type="radio" name="minRating" value="5"
+                       checked="@(Model.MinRating == 5)" />
+                <span>5</span>
+            </label>
+
+            <label>
+                <input type="radio" name="minRating" value="4"
+                       checked="@(Model.MinRating == 4)" />
+                <span>4+</span>
+            </label>
+
+            <label>
+                <input type="radio" name="minRating" value="3"
+                       checked="@(Model.MinRating == 3)" />
+                <span>3+</span>
+            </label>
+
+            <label>
+                <input type="radio" name="minRating" value="2"
+                       checked="@(Model.MinRating == 2)" />
+                <span>2+</span>
+            </label>
+
+            <label>
+                <input type="radio" name="minRating" value="1"
+                       checked="@(Model.MinRating == 1)" />
+                <span>1+</span>
+            </label>
+
+            <label>
+                <input type="radio" name="minRating" value="0"
+                       checked="@(Model.MinRating == 0)" />
+                <span>Alles</span>
+            </label>
+        </div>
+    </div>
+</details>
 
                 <details class="EventApp-filter-group EventApp-filter-dropdown" open>
                     <summary class="EventApp-filter-title">
@@ -79,14 +108,39 @@
 
                     <div class="EventApp-filter-body">
                         <div class="EventApp-inputs">
-                            <input type="number" id="min-input" class="EventApp-input-field" min="0" max="2200" value="0" />
-                            <input type="number" id="max-input" class="EventApp-input-field" min="0" max="2200" value="2200" />
+                            <input type="number"
+                                   id="min-input"
+                                   name="minPrice"
+                                   class="EventApp-input-field"
+                                   min="0"
+                                   max="2200"
+                                   value="@Model.MinPrice" />
+
+                            <input type="number"
+                                   id="max-input"
+                                   name="maxPrice"
+                                   class="EventApp-input-field"
+                                   min="0"
+                                   max="2200"
+                                   value="@Model.MaxPrice" />
                         </div>
 
                         <div class="EventApp-range-wrap">
                             <div class="range-track"></div>
-                            <input type="range" class="min-range" min="0" max="2200" value="0" step="1" />
-                            <input type="range" class="max-range" min="0" max="2200" value="2200" step="1" />
+
+                            <input type="range"
+                                   class="min-range"
+                                   min="0"
+                                   max="2200"
+                                   value="@Model.MinPrice"
+                                   step="1" />
+
+                            <input type="range"
+                                   class="max-range"
+                                   min="0"
+                                   max="2200"
+                                   value="@Model.MaxPrice"
+                                   step="1" />
                         </div>
                     </div>
                 </details>
@@ -193,7 +247,7 @@
                                         <div class="EventApp-price">@priceText</div>
                                         <div class="EventApp-rating">
                                             <img class="EventApp-rating-inline-icon" src="/images/icons/img_rating.png" alt="Rating" />
-                                            <span>@eventCard.RatingText</span>
+                                            <span>@eventCard.RatingValue</span>
                                         </div>
                                     </div>
 
