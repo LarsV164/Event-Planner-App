@@ -21,7 +21,7 @@ namespace EventApp.OrganiserPortal.Pages.Portal
         public CreateModel(
             IOrganiserRepository organiserRepository,
             IWebHostEnvironment environment,
-            IConfiguration configuration)
+            IConfiguration configuration) //inject dependencies via constructor
         {
             _organiserRepository = organiserRepository;
             _environment = environment;

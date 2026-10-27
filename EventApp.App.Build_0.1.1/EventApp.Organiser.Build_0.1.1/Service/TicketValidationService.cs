@@ -4,9 +4,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EventApp.OrganiserPortal.Services
 {
-    public class TicketValidationService : ITicketValidationService
+    public class TicketValidationService : ITicketValidationService //implementatie van de interface ITicketValidationService
     {
-        public bool IsValid(CreateTicketInputModel ticket)
+        public bool ChecksIsValid(CreateTicketInputModel ticket)
         {
             ValidationContext context = new ValidationContext(ticket);
             List<ValidationResult> results = new List<ValidationResult>();
