@@ -25,6 +25,7 @@ namespace EventApp.Web.Pages
         public decimal MinPrice { get; set; } = 0;
         public decimal MaxPrice { get; set; } = 2200;
         public int MinRating { get; set; } = 0;
+        public bool AdultsOnly { get; set; } = false;
 
         public List<string> SelectedCategories { get; set; } = new();
         public List<string> SelectedAccessibility { get; set; } = new();
@@ -43,8 +44,12 @@ namespace EventApp.Web.Pages
             decimal maxPrice = 2200,
             List<string>? categories = null,
             List<string>? accessibility = null,
-            int minRating = 0)
+            int minRating = 0,
+            bool adultsOnly = false)
         {
+            // Bewaar de geselecteerde filters
+            AdultsOnly = adultsOnly;
+
             // Controleer de prijsgrenzen
             if (minPrice > maxPrice)
             {
@@ -77,6 +82,10 @@ namespace EventApp.Web.Pages
                     e.MinPrice >= MinPrice &&
                     e.MinPrice <= MaxPrice)
 
+                // Filter op leeftijd
+                .Where(e => !AdultsOnly || e.IsAdultsOnly)
+
+
                 // Filter op beoordeling
                 .Where(e =>
                     MinRating == 0 ||
@@ -99,6 +108,8 @@ namespace EventApp.Web.Pages
                             StringComparison.OrdinalIgnoreCase)))
 
                 .ToList();
+
+
         }
     }
 }

@@ -163,9 +163,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 window.location.search
             );
 
-            // Verwijder de reviewfilter als 'Alles' is gekozen.
+            // Verwijder de reviewfilter als Alles is gekozen.
             if (this.value === "0") {
                 urlParameters.delete("minRating");
+
             } else {
                 // Stel de gekozen minimumscore in.
                 urlParameters.set("minRating", this.value);
@@ -178,5 +179,29 @@ document.addEventListener("DOMContentLoaded", function () {
                 (queryString ? "?" + queryString : "");
         });
     });
+    // 18+-filter
+    const adultsOnlyCheckbox = document.getElementById(
+        "adults-only-checkbox"
+    );
+
+    if (adultsOnlyCheckbox) {
+        adultsOnlyCheckbox.addEventListener("change", function () {
+            const urlParameters = new URLSearchParams(
+                window.location.search
+            );
+
+            if (this.checked) {
+                urlParameters.set("adultsOnly", "true");
+            } else {
+                urlParameters.delete("adultsOnly");
+            }
+
+            const queryString = urlParameters.toString();
+
+            window.location.href =
+                window.location.pathname +
+                (queryString ? "?" + queryString : "");
+        });
+    }
 
 });
