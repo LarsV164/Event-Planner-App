@@ -14,8 +14,7 @@ namespace EventApp.Organiser.Test
     {
         public class CreateEventInputModelTests
         {
-            // classname_methodname_action name confention
-            // Laura
+            // Lars
 
             private static CreateEventInputModel ValidEvent(bool? wheelchairAccessibleToilet) => new()
             {
