@@ -15,6 +15,9 @@ namespace EventApp.Web.Models
         public bool IsAdultsOnly { get; set; }
         public List<string> Categories { get; set; } = [];
         public string AccessibilityText { get; set; } = string.Empty;
+        public List<(DateTime Start, DateTime End)> Dates { get; set; } = new();
+
+        public List<string> AccessibilityOptions { get; set; } = new();
 
         public string GetCategoryIcon(String category)
         {
