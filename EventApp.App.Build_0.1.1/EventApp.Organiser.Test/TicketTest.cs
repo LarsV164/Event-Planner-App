@@ -84,9 +84,9 @@ namespace EventApp.Organiser.Test
                 isValid.Should().BeTrue();
             }
 
+            //met injection 
             [Fact]
             public void ETP29a_priceWithNegativeValue_ShouldBeInvalid()
-            //met injection 
             {
                 //Arrange
                 CreateTicketInputModel ticket = new CreateTicketInputModel
@@ -97,7 +97,7 @@ namespace EventApp.Organiser.Test
                 };
 
                 //Act
-                bool isValid = _ticketValidationService.IsValid(ticket);
+                bool isValid = _ticketValidationService.ChecksIsValid(ticket);
 
                 //Assert
                 isValid.Should().BeFalse();
@@ -116,7 +116,7 @@ namespace EventApp.Organiser.Test
                 };
 
                 //Act
-                bool isValid = _ticketValidationService.IsValid(ticket);
+                bool isValid = _ticketValidationService.ChecksIsValid(ticket);
 
                 //Assert
                 isValid.Should().BeFalse();
@@ -162,11 +162,11 @@ namespace EventApp.Organiser.Test
                     new Mock<ITicketValidationService>();
 
                 mockValidationService
-                    .Setup(service => service.IsValid(ticket))
+                    .Setup(service => service.ChecksIsValid(ticket))
                     .Returns(true);
 
                 // Act
-                bool isValid = mockValidationService.Object.IsValid(ticket);
+                bool isValid = mockValidationService.Object.ChecksIsValid(ticket);
 
                 // Assert
                 isValid.Should().BeTrue();
@@ -187,11 +187,11 @@ namespace EventApp.Organiser.Test
                     new Mock<ITicketValidationService>();
 
                 mockValidationService
-                    .Setup(service => service.IsValid(ticket))
+                    .Setup(service => service.ChecksIsValid(ticket))
                     .Returns(false);
 
                 // Act
-                bool isValid = mockValidationService.Object.IsValid(ticket);
+                bool isValid = mockValidationService.Object.ChecksIsValid(ticket);
 
                 // Assert
                 isValid.Should().BeFalse();

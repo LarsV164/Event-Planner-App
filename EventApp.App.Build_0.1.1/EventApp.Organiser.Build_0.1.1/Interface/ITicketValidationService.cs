@@ -6,6 +6,6 @@ namespace EventApp.OrganiserPortal.Services
 {
     public interface ITicketValidationService
     {
-        bool IsValid(CreateTicketInputModel ticket);
+        bool ChecksIsValid(CreateTicketInputModel ticket);
     }
 }
