@@ -32,56 +32,92 @@
                 @foreach (var item in Model.Events)
                 {
                     <article class="dashboard-event-item">
-                        <a class="dashboard-event-edit-btn"
-                               href="/Portal/Edit/@item.EventId"
-                               aria-label="Evenement bewerken">
-                            ✎
-                        </a>
 
-                        <div class="dashboard-event-item-media">
-                            <img src="@(string.IsNullOrWhiteSpace(item.ImageUrl) ? "/uploads/events/placeholder.jpg" : item.ImageUrl)"
-                                 alt="@item.EventName" />
-                        </div>
+    <div class="dashboard-event-topbar">
 
-                        <div class="dashboard-event-item-body">
-                            <div class="dashboard-event-title-row">
-                                <h2>@item.EventName</h2>
+        <h2>@item.EventName</h2>
 
-                                @if (item.IsCanceled)
-                                {
-                                    <span class="dashboard-event-status dashboard-event-status--canceled">Geannuleerd</span>
-                                }
-                            </div>
+        <div class="dashboard-event-status-group">
+            <label class="dashboard-event-date-label">Status:</label>
+            <select class="form-control">
+                <option value="scheduled">Scheduled</option>
+                <option value="draft">Concept</option>
+                <option value="soldOut">Uitverkocht</option>
+                <option value="postponed">Verplaatst</option>
+                <option value="ticketSaleStarted">Ticketverkoop gestart</option>
+                <option value="ticketSaleEnded">Ticketverkoop beëindigd</option>
+                <option value="eventStarted">Event gestart</option>
+                <option value="eventEnded">Event beëindigd</option>
+            </select>
 
-                            <div class="dashboard-event-meta-grid">
-                                <div class="dashboard-event-meta-item">
-                                    <span class="dashboard-event-meta-label">Binnen / Buiten</span>
-                                    <span class="dashboard-event-meta-value">@item.IndoorsOutdoors</span>
-                                </div>
+            @if (item.IsCanceled)
+            {
+               <span class="dashboard-event-status dashboard-event-status--canceled">Geannuleerd</span>
+            }
+        </div>
+    </div>
 
-                                <div class="dashboard-event-meta-item">
-                                    <span class="dashboard-event-meta-label">Prijs</span>
-                                    <span class="dashboard-event-meta-value">
-                                        @(item.MinPrice.HasValue ? $"€{item.MinPrice.Value:0.##}+" : "Geen prijs")
-                                    </span>
-                                </div>
+    <a class="dashboard-event-edit-btn"
+       href="/Portal/Edit/@item.EventId"
+       aria-label="Evenement bewerken">
+        ✎
+    </a>
 
-                                <div class="dashboard-event-meta-item">
-                                    <span class="dashboard-event-meta-label">Categorieën</span>
-                                    <span class="dashboard-event-meta-value">
-                                        @(string.IsNullOrWhiteSpace(item.CategoriesText) ? "Geen categorieën" : item.CategoriesText)
-                                    </span>
-                                </div>
+    <div class="dashboard-event-item-media">
+        <img src="@(string.IsNullOrWhiteSpace(item.ImageUrl)
+            ? "/uploads/events/placeholder.jpg"
+            : item.ImageUrl)"
+             alt="@item.EventName" />
+    </div>
 
-                                <div class="dashboard-event-meta-item">
-                                    <span class="dashboard-event-meta-label">Toegankelijkheid</span>
-                                    <span class="dashboard-event-meta-value">
-                                        @(string.IsNullOrWhiteSpace(item.AccessibilityText) ? "Geen toegankelijkheidsopties" : item.AccessibilityText)
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </article>
+    <div class="dashboard-event-item-body">
+
+        <div class="dashboard-event-meta-grid">
+
+            <div class="dashboard-event-meta-item">
+                <span class="dashboard-event-meta-label">
+                    Binnen / Buiten
+                </span>
+                <span class="dashboard-event-meta-value">
+                    @item.IndoorsOutdoors
+                </span>
+            </div>
+
+            <div class="dashboard-event-meta-item">
+                <span class="dashboard-event-meta-label">Prijs</span>
+                <span class="dashboard-event-meta-value">
+                    @(item.MinPrice.HasValue
+                        ? $"€{item.MinPrice.Value:0.##}+"
+                        : "Geen prijs")
+                </span>
+            </div>
+
+            <div class="dashboard-event-meta-item">
+                <span class="dashboard-event-meta-label">
+                    Categorieën
+                </span>
+                <span class="dashboard-event-meta-value">
+                    @(string.IsNullOrWhiteSpace(item.CategoriesText)
+                        ? "Geen categorieën"
+                        : item.CategoriesText)
+                </span>
+            </div>
+
+            <div class="dashboard-event-meta-item">
+                <span class="dashboard-event-meta-label">
+                    Toegankelijkheid
+                </span>
+                <span class="dashboard-event-meta-value">
+                    @(string.IsNullOrWhiteSpace(item.AccessibilityText)
+                        ? "Geen toegankelijkheidsopties"
+                        : item.AccessibilityText)
+                </span>
+            </div>
+
+        </div>
+    </div>
+
+</article>
                 }
             </div>
         }
