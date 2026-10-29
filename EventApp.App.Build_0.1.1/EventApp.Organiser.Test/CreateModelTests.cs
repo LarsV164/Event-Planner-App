@@ -47,7 +47,7 @@ namespace EventApp.Organiser.Test
         }
 
         [Fact]
-        public void OrganiserService_CanBeCreatedUsingDependencyInjection()
+        public void OrganiserService_CanBeCreated()
         {
             // Arrange
             ServiceCollection services = new ServiceCollection();
