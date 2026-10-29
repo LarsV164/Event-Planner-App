@@ -35,14 +35,14 @@ namespace EventApp.Organiser.Test
             Mock<ILogger<CreateModel>> logger =
                 new Mock<ILogger<CreateModel>>();
 
-            // Act
+            // Act aanmaken met de mocks
             CreateModel model = new CreateModel(
                 organiserRepository.Object,
                 environment.Object,
                 configuration.Object,
                 logger.Object);
 
-            // Assert
+            // Assert controlleer of het is aangemaakt
             model.Should().NotBeNull();
         }
 
