@@ -1,4 +1,9 @@
-﻿.portal-map-picker {
+﻿.portal-form-group[hidden],
+.js-location-fields[hidden] {
+    display: none;
+}
+
+.portal-map-picker {
     width: 100%;
     border: 1px solid rgba(38, 50, 77, 0.95);
     border-radius: 22px;

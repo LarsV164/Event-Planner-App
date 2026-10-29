@@ -82,6 +82,16 @@ namespace EventApp.OrganiserPortal.Pages.Portal
                 ModelState.AddModelError(string.Empty, "Upload minimaal één afbeelding.");
             }
 
+            if (Input.NoAddressMode)
+            {
+                // The address is taken from the map pin, so the separate address fields
+                // are not required when the organiser has no address.
+                ModelState.Remove("Input.Street");
+                ModelState.Remove("Input.HouseNumber");
+                ModelState.Remove("Input.PostalCode");
+                ModelState.Remove("Input.City");
+            }
+
             if (!ModelState.IsValid)
             {
                 return Page();

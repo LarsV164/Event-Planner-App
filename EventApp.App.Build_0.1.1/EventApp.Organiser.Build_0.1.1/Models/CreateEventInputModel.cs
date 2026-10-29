@@ -16,6 +16,12 @@ namespace EventApp.OrganiserPortal.Models
 
         public string? Address { get; set; }
 
+        /// <summary>
+        /// True when the organiser has no address and picked the location on the map instead.
+        /// In that case the separate address fields are filled from the map pin and are not required.
+        /// </summary>
+        public bool NoAddressMode { get; set; }
+
         public decimal? Latitude { get; set; }
 
         public decimal? Longitude { get; set; }
