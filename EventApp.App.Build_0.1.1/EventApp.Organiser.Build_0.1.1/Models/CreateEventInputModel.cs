@@ -18,7 +18,7 @@ namespace EventApp.OrganiserPortal.Models
 
         /// <summary>
         /// True when the organiser has no address and picked the location on the map instead.
-        /// In that case the separate address fields are filled from the map pin and are not required.
+        /// The separate address fields stay required; they are filled automatically from the map pin.
         /// </summary>
         public bool NoAddressMode { get; set; }
 
