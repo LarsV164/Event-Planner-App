@@ -302,6 +302,7 @@
         border: 1px solid rgba(245, 247, 251, 0.08);
         background: #12192B;
         color: white;
+        text-align: center;
         /*pijltje uit de dropdown weghalen*/
         appearance: none;
         -webkit-appearance: none;

@@ -3,6 +3,16 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EventApp.OrganiserPortal.Models
 {
+    public enum evenStatus 
+    {
+        Draft,
+        Soldout,
+        Postponed,
+        TicketSaleStarted,
+        TicketSaleEnded,
+        EventStarted,
+        EventEnded
+    }
     public class CreateEventInputModel
     {
         [Required(ErrorMessage = "Naam van het evenement is verplicht.")]
@@ -76,5 +86,8 @@ namespace EventApp.OrganiserPortal.Models
         [Required(ErrorMessage = "Geef aan of het geschikt is voor kinderen")]
         [Display(Name = "Geschikt voor kinderen")]
         public bool? ChildrenFriendly { get; set; }
+
+        // enum voor eventstatus
+        public evenStatus EventStatus { get; set; } 
     }
 }
