@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using EventApp.OrganiserPortal.Repositories;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -31,18 +32,22 @@ namespace EventApp.Organiser.Test
             Mock<IConfiguration> configuration =
                 new Mock<IConfiguration>();
 
+            Mock<ILogger<CreateModel>> logger =
+                new Mock<ILogger<CreateModel>>();
+
             // Act
             CreateModel model = new CreateModel(
                 organiserRepository.Object,
                 environment.Object,
-                configuration.Object);
+                configuration.Object,
+                logger.Object);
 
             // Assert
             model.Should().NotBeNull();
         }
 
         [Fact]
-        public void OrganiserService_CanBeCreatedUsingDependencyInjection()
+        public void OrganiserService_CanBeCreated()
         {
             // Arrange
             ServiceCollection services = new ServiceCollection();
@@ -57,6 +62,7 @@ namespace EventApp.Organiser.Test
             services.AddSingleton<IConfiguration>(configuration);
             services.AddScoped<IOrganiserRepository, SqlOrganiserRepository>();
             services.AddScoped<IOrganiserService, OrganiserService>();
+            services.AddScoped<ILogger<CreateModel>, Logger<CreateModel>>();
 
             // Act
             using ServiceProvider serviceProvider = services.BuildServiceProvider();
