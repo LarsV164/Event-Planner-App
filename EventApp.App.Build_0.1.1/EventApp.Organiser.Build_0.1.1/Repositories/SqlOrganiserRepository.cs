@@ -106,9 +106,8 @@ namespace EventApp.OrganiserPortal.Repositories
 
             try
             {
-                var locationId = await GetNextIdAsync(connection, transaction, OrganiserQueries.GetNextLocationId);
+                var locationId = await GetOrCreateLocationIdAsync(connection, transaction, input);
 
-                await InsertLocationAsync(connection, transaction, locationId, input);
                 await InsertEventAsync(connection, transaction, eventId, locationId, organiserId, input);
                 await InsertEventDatesAsync(connection, transaction, eventId, input);
                 await InsertTicketsAsync(connection, transaction, eventId, input);
@@ -289,7 +288,81 @@ namespace EventApp.OrganiserPortal.Repositories
             return Convert.ToInt32(result);
         }
 
-        private static async Task InsertLocationAsync(
+        private static async Task<int> GetOrCreateLocationIdAsync(
+            SqlConnection connection,
+            SqlTransaction transaction,
+            CreateEventInputModel input)
+        {
+            // dbo.locations has a unique index on (latitude, longitude) with IGNORE_DUP_KEY = ON.
+            // A duplicate location insert is therefore silently skipped, which used to leave the
+            // event pointing at a location_id that was never created (FK_events_location).
+            var existingLocationId = await FindLocationIdAsync(
+                connection,
+                transaction,
+                input.Latitude,
+                input.Longitude);
+
+            if (existingLocationId.HasValue)
+            {
+                return existingLocationId.Value;
+            }
+
+            for (var attempt = 0; attempt < 3; attempt++)
+            {
+                var candidateId = await GetNextIdAsync(connection, transaction, OrganiserQueries.GetNextLocationId);
+                var rowsAffected = await InsertLocationAsync(connection, transaction, candidateId, input);
+
+                if (rowsAffected > 0)
+                {
+                    return candidateId;
+                }
+
+                // The insert was ignored because of a duplicate key; reuse the existing row.
+                existingLocationId = await FindLocationIdAsync(
+                    connection,
+                    transaction,
+                    input.Latitude,
+                    input.Longitude);
+
+                if (existingLocationId.HasValue)
+                {
+                    return existingLocationId.Value;
+                }
+            }
+
+            throw new InvalidOperationException("Kon geen locatie aanmaken voor het evenement.");
+        }
+
+        private static async Task<int?> FindLocationIdAsync(
+            SqlConnection connection,
+            SqlTransaction transaction,
+            decimal? latitude,
+            decimal? longitude)
+        {
+            await using var command = new SqlCommand(OrganiserQueries.FindLocationIdByCoordinates, connection, transaction);
+
+            var latitudeParameter = command.Parameters.Add("@Latitude", SqlDbType.Decimal);
+            latitudeParameter.Precision = 9;
+            latitudeParameter.Scale = 6;
+            latitudeParameter.Value = latitude.HasValue
+                ? Math.Round(latitude.Value, 6)
+                : DBNull.Value;
+
+            var longitudeParameter = command.Parameters.Add("@Longitude", SqlDbType.Decimal);
+            longitudeParameter.Precision = 9;
+            longitudeParameter.Scale = 6;
+            longitudeParameter.Value = longitude.HasValue
+                ? Math.Round(longitude.Value, 6)
+                : DBNull.Value;
+
+            var result = await command.ExecuteScalarAsync();
+
+            return result == null || result == DBNull.Value
+                ? null
+                : Convert.ToInt32(result);
+        }
+
+        private static async Task<int> InsertLocationAsync(
             SqlConnection connection,
             SqlTransaction transaction,
             int locationId,
@@ -320,7 +393,7 @@ namespace EventApp.OrganiserPortal.Repositories
             command.Parameters.AddWithValue("@PostalCode", string.IsNullOrWhiteSpace(input.PostalCode) ? DBNull.Value : input.PostalCode);
             command.Parameters.AddWithValue("@City", string.IsNullOrWhiteSpace(input.City) ? DBNull.Value : input.City);
 
-            await command.ExecuteNonQueryAsync();
+            return await command.ExecuteNonQueryAsync();
         }
 
         private static async Task InsertEventAsync(

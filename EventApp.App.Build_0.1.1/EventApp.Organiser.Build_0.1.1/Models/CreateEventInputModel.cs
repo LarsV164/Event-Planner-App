@@ -26,6 +26,12 @@ namespace EventApp.OrganiserPortal.Models
 
         public string? Address { get; set; }
 
+        /// <summary>
+        /// True when the organiser has no address and picked the location on the map instead.
+        /// The separate address fields stay required; they are filled automatically from the map pin.
+        /// </summary>
+        public bool NoAddressMode { get; set; }
+
         public decimal? Latitude { get; set; }
 
         public decimal? Longitude { get; set; }
@@ -52,7 +58,6 @@ namespace EventApp.OrganiserPortal.Models
         [Required, Display(Name = "Straat")]
         public string Street { get; set; } = "";
 
-        [Required(ErrorMessage = "Huisnummer is verplicht")]
         [Display(Name = "Huisnummer")]
         [Range(1, int.MaxValue, ErrorMessage = "Voer een geldig huisnummer in")]
         public int? HouseNumber { get; set; }
