@@ -3,6 +3,12 @@
 
 @{
     ViewData["Title"] = "Home";
+
+    var minPriceValue = Model.MinPrice.ToString(
+        System.Globalization.CultureInfo.InvariantCulture);
+
+    var maxPriceValue = Model.MaxPrice.ToString(
+        System.Globalization.CultureInfo.InvariantCulture);
 }
 
 <div id="EventApp-app">
@@ -15,20 +21,53 @@
 
         <div class="EventApp-topbar-search">
             <div class="EventApp-search EventApp-search-topbar">
-                <input type="text" id="search-input" placeholder="Zoek evenementen op naam..." />
-                <button type="button" id="clear-search-btn" aria-label="Zoekveld leegmaken">×</button>
+                <input type="text"
+                       id="search-input"
+                       placeholder="Zoek evenementen op naam..." />
+
+                <button type="button"
+                        id="clear-search-btn"
+                        aria-label="Zoekveld leegmaken">
+                    ×
+                </button>
             </div>
         </div>
 
         <nav class="EventApp-topbar-nav" aria-label="Hoofdnavigatie">
-            <button type="button" class="EventApp-topbar-link is-active" id="btn-nav-home-top">Home</button>
-            <button type="button" class="EventApp-topbar-link" id="btn-nav-map-top">Map</button>
-            <button type="button" class="EventApp-topbar-link" id="btn-nav-social-top">Social</button>
-            <a class="EventApp-topbar-link" href="/bookmarks" id="btn-nav-bookmarks-top" aria-label="Mijn opgeslagen evenementen">
+            <button type="button"
+                    class="EventApp-topbar-link is-active"
+                    id="btn-nav-home-top">
+                Home
+            </button>
+
+            <button type="button"
+                    class="EventApp-topbar-link"
+                    id="btn-nav-map-top">
+                Map
+            </button>
+
+            <button type="button"
+                    class="EventApp-topbar-link"
+                    id="btn-nav-social-top">
+                Social
+            </button>
+
+            <a class="EventApp-topbar-link"
+               href="/bookmarks"
+               id="btn-nav-bookmarks-top"
+               aria-label="Mijn opgeslagen evenementen">
                 Opgeslagen
             </a>
-            <button type="button" class="EventApp-profile-pill" id="btn-nav-profile-top" aria-label="Profiel">
-                <img class="EventApp-profile-pill-image" id="EventApp-topbar-profile-image" src="/images/icons/img_profileplaceholder.png.svg" alt="Profiel" hidden />
+
+            <button type="button"
+                    class="EventApp-profile-pill"
+                    id="btn-nav-profile-top"
+                    aria-label="Profiel">
+                <img class="EventApp-profile-pill-image"
+                     id="EventApp-topbar-profile-image"
+                     src="/images/icons/img_profileplaceholder.png.svg"
+                     alt="Profiel"
+                     hidden />
             </button>
         </nav>
     </header>
@@ -36,148 +75,190 @@
     <div class="EventApp-page">
         <aside class="EventApp-sidebar">
             <div class="EventApp-sidebar-inner">
-                <div class="EventApp-filter-group">
-                    <div class="EventApp-filter-title EventApp-filter-title-static">Kenmerken</div>
-                    <div class="EventApp-boolean-group">
-                        <label class="EventApp-checkbox">
-                            <input type="checkbox"
-                                   id="adults-only-checkbox"
-                                   name="adultsOnly"
-                                   value="true"
-                                   checked="@(Model.AdultsOnly)" />
-                            <span>18+</span>
+                <form id="filter-form" method="get">
+
+                    <div class="EventApp-filter-group">
+                        <div class="EventApp-filter-title EventApp-filter-title-static">
+                            Kenmerken
+                        </div>
+
+                        <div class="EventApp-boolean-group">
+                            <label class="EventApp-checkbox">
+                                <input type="checkbox"
+                                       id="adults-only-checkbox"
+                                       name="adultsOnly"
+                                       value="true"
+                                       checked="@Model.AdultsOnly" />
+                                <span>18+</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="EventApp-filter-group">
+                        <div class="EventApp-filter-title EventApp-filter-title-static">
+                            Datum
+                        </div>
+
+                        <label for="event-date-input">
+                            Datum evenement
                         </label>
+
+                        <input type="date"
+                               id="event-date-input"
+                               name="eventDate"
+                               class="EventApp-input-field"
+                               value="@(Model.EventDate?.ToString("yyyy-MM-dd"))" />
                     </div>
-                </div>
 
-    
+                    <details class="EventApp-filter-group EventApp-filter-dropdown" open>
+                        <summary class="EventApp-filter-title">
+                            <span>Reviews</span>
+                            <span class="EventApp-chevron"
+                                  aria-hidden="true"></span>
+                        </summary>
 
-                <div class="EventApp-filter-group">
-                    <div class="EventApp-filter-title EventApp-filter-title-static">Datums</div>
-                    <div class="EventApp-inputs">
-                        <input type="date" id="end-date-input" class="EventApp-input-field" aria-label="Einddatum" />
-                    </div>
-                </div>
+                        <div class="EventApp-filter-body">
+                            <div class="EventApp-rating-list">
+                                @for (int rating = 5; rating >= 0; rating--)
+                                {
+                                    var ratingLabel = rating == 0
+                                        ? "Alles"
+                                        : rating == 5
+                                            ? "5"
+                                            : $"{rating}+";
 
-               <details class="EventApp-filter-group EventApp-filter-dropdown" open>
-    <summary class="EventApp-filter-title">
-        <span>Reviews</span>
-        <span class="EventApp-chevron" aria-hidden="true"></span>
-    </summary>
-
-    <div class="EventApp-filter-body">
-        <div class="EventApp-rating-list">
-            <label>
-                <input type="radio" name="minRating" value="5"
-                       checked="@(Model.MinRating == 5)" />
-                <span>5</span>
-            </label>
-
-            <label>
-                <input type="radio" name="minRating" value="4"
-                       checked="@(Model.MinRating == 4)" />
-                <span>4+</span>
-            </label>
-
-            <label>
-                <input type="radio" name="minRating" value="3"
-                       checked="@(Model.MinRating == 3)" />
-                <span>3+</span>
-            </label>
-
-            <label>
-                <input type="radio" name="minRating" value="2"
-                       checked="@(Model.MinRating == 2)" />
-                <span>2+</span>
-            </label>
-
-            <label>
-                <input type="radio" name="minRating" value="1"
-                       checked="@(Model.MinRating == 1)" />
-                <span>1+</span>
-            </label>
-
-            <label>
-                <input type="radio" name="minRating" value="0"
-                       checked="@(Model.MinRating == 0)" />
-                <span>Alles</span>
-            </label>
-        </div>
-    </div>
-</details>
-
-                <details class="EventApp-filter-group EventApp-filter-dropdown" open>
-                    <summary class="EventApp-filter-title">
-                        <span>Prijs</span>
-                        <span class="EventApp-chevron" aria-hidden="true"></span>
-                    </summary>
-
-                    <div class="EventApp-filter-body">
-                        <div class="EventApp-inputs">
-                            <input type="number"
-                                   id="min-input"
-                                   name="minPrice"
-                                   class="EventApp-input-field"
-                                   min="0"
-                                   max="2200"
-                                   value="@Model.MinPrice" />
-
-                            <input type="number"
-                                   id="max-input"
-                                   name="maxPrice"
-                                   class="EventApp-input-field"
-                                   min="0"
-                                   max="2200"
-                                   value="@Model.MaxPrice" />
+                                    <label>
+                                        <input type="radio"
+                                               name="minRating"
+                                               value="@rating"
+                                               checked="@(Model.MinRating == rating)" />
+                                        <span>@ratingLabel</span>
+                                    </label>
+                                }
+                            </div>
                         </div>
+                    </details>
 
-                        <div class="EventApp-range-wrap">
-                            <div class="range-track"></div>
+                    <details class="EventApp-filter-group EventApp-filter-dropdown" open>
+                        <summary class="EventApp-filter-title">
+                            <span>Prijs</span>
+                            <span class="EventApp-chevron"
+                                  aria-hidden="true"></span>
+                        </summary>
 
-                            <input type="range"
-                                   class="min-range"
-                                   min="0"
-                                   max="2200"
-                                   value="@Model.MinPrice"
-                                   step="1" />
+                        <div class="EventApp-filter-body">
+                            <div class="EventApp-inputs">
+                                <input type="number"
+                                       id="min-input"
+                                       name="minPrice"
+                                       class="EventApp-input-field"
+                                       aria-label="Minimumprijs"
+                                       min="0"
+                                       max="2200"
+                                       step="0.01"
+                                       value="@minPriceValue" />
 
-                            <input type="range"
-                                   class="max-range"
-                                   min="0"
-                                   max="2200"
-                                   value="@Model.MaxPrice"
-                                   step="1" />
+                                <input type="number"
+                                       id="max-input"
+                                       name="maxPrice"
+                                       class="EventApp-input-field"
+                                       aria-label="Maximumprijs"
+                                       min="0"
+                                       max="2200"
+                                       step="0.01"
+                                       value="@maxPriceValue" />
+                            </div>
+
+                            <div class="EventApp-range-wrap">
+                                <div class="range-track"></div>
+
+                                <input type="range"
+                                       class="min-range"
+                                       aria-label="Minimumprijs instellen"
+                                       min="0"
+                                       max="2200"
+                                       step="1"
+                                       value="@minPriceValue" />
+
+                                <input type="range"
+                                       class="max-range"
+                                       aria-label="Maximumprijs instellen"
+                                       min="0"
+                                       max="2200"
+                                       step="1"
+                                       value="@maxPriceValue" />
+                            </div>
                         </div>
-                    </div>
-                </details>
+                    </details>
 
-                <details class="EventApp-filter-group EventApp-filter-dropdown" open>
-                    <summary class="EventApp-filter-title">
-                        <span>Categorieën</span>
-                        <span class="EventApp-chevron" aria-hidden="true"></span>
-                    </summary>
-                    <div class="EventApp-filter-body">
-                        <div class="EventApp-boolean-group" id="dynamic-categories-container"></div>
-                    </div>
-                </details>
+                    <details id="categorieen"
+                             class="EventApp-filter-group EventApp-filter-dropdown"
+                             open>
+                        <summary class="EventApp-filter-title">
+                            <span>Categorieën</span>
+                            <span class="EventApp-chevron"
+                                  aria-hidden="true"></span>
+                        </summary>
 
-                <details class="EventApp-filter-group EventApp-filter-dropdown" open>
-                    <summary class="EventApp-filter-title">
-                        <span>Toegankelijkheidsopties</span>
-                        <span class="EventApp-chevron" aria-hidden="true"></span>
-                    </summary>
-                    <div class="EventApp-filter-body">
-                        <div class="EventApp-boolean-group" id="dynamic-accessibility-container"></div>
-                    </div>
-                </details>
+                        <div class="EventApp-filter-body">
+                            <div class="EventApp-boolean-group"
+                                 id="dynamic-categories-container">
+
+                                @foreach (var category in Model.AllCategories)
+                                {
+                                    <label class="EventApp-checkbox">
+                                        <input type="checkbox"
+                                               name="categories"
+                                               value="@category"
+                                               checked="@(Model.SelectedCategories.Contains(category))" />
+                                        <span>@category</span>
+                                    </label>
+                                }
+                            </div>
+                        </div>
+                    </details>
+
+                    <details class="EventApp-filter-group EventApp-filter-dropdown" open>
+                        <summary class="EventApp-filter-title">
+                            <span>Toegankelijkheidsopties</span>
+                            <span class="EventApp-chevron"
+                                  aria-hidden="true"></span>
+                        </summary>
+
+                        <div class="EventApp-filter-body">
+                            <div class="EventApp-boolean-group"
+                                 id="dynamic-accessibility-container">
+
+                                @foreach (var option in Model.AllAccessibility)
+                                {
+                                    <label class="EventApp-checkbox">
+                                        <input type="checkbox"
+                                               name="accessibility"
+                                               value="@option"
+                                               checked="@(Model.SelectedAccessibility.Contains(option))" />
+                                        <span>@option</span>
+                                    </label>
+                                }
+                            </div>
+                        </div>
+                    </details>
+
+                    <button type="submit">
+                        Filters toepassen
+                    </button>
+
+                    <a href="/">Filters wissen</a>
+                </form>
             </div>
         </aside>
 
         <main class="EventApp-main">
-            <div id="EventApp-status" class="EventApp-status">
+            <div id="EventApp-status"
+                 class="EventApp-status"
+                 aria-live="polite">
                 @if (Model.Events.Count == 1)
                 {
-                    <span>@Model.Events.Count Evenement gevonden</span>
+                    <span>1 Evenement gevonden</span>
                 }
                 else
                 {
@@ -221,17 +302,27 @@
                             _ => $"{accessibilityItems[0]}, {accessibilityItems[1]} en meer"
                         };
 
-                        <section class="EventApp-event-row" data-event-id="@eventCard.EventId">
+                        <section class="EventApp-event-row"
+                                 data-event-id="@eventCard.EventId">
                             <article class="EventApp-card">
                                 <div class="EventApp-card-media">
-                                    <img src="@imageUrl" alt="@eventCard.EventName" />
+                                    <img src="@imageUrl"
+                                         alt="@eventCard.EventName" />
+
                                     <div class="EventApp-category-badges">
                                         @foreach (var category in eventCard.Categories)
                                         {
-                                        <span class="EventApp-category-badge" title="${escapeHtml(category)}">
-                                            <span class="EventApp-category-icon" aria-hidden="true">@eventCard.GetCategoryIcon(category)</span>
-                                            <span class="EventApp-category-label">@category</span>
-                                        </span>
+                                            <span class="EventApp-category-badge"
+                                                  title="@category">
+                                                <span class="EventApp-category-icon"
+                                                      aria-hidden="true">
+                                                    @eventCard.GetCategoryIcon(category)
+                                                </span>
+
+                                                <span class="EventApp-category-label">
+                                                    @category
+                                                </span>
+                                            </span>
                                         }
                                     </div>
                                 </div>
@@ -239,33 +330,53 @@
                                 <div class="EventApp-card-content">
                                     <div class="EventApp-card-head">
                                         <h2>@eventCard.EventName</h2>
-                                        <button
-                                            class="EventApp-bookmark-btn"
-                                            data-event-id="@eventCard.EventId"
-                                            type="button"
-                                            aria-label="Opslaan"
-                                            title="Opslaan">
-                                            <img class="EventApp-bookmark-icon" src="/images/icons/img_notbookmarked.png" alt="" aria-hidden="true" />
+
+                                        <button class="EventApp-bookmark-btn"
+                                                data-event-id="@eventCard.EventId"
+                                                type="button"
+                                                aria-label="Opslaan"
+                                                title="Opslaan">
+                                            <img class="EventApp-bookmark-icon"
+                                                 src="/images/icons/img_notbookmarked.png"
+                                                 alt=""
+                                                 aria-hidden="true" />
                                         </button>
                                     </div>
 
                                     <div class="EventApp-meta">
-                                        <div class="EventApp-price">@priceText</div>
+                                        <div class="EventApp-price">
+                                            @priceText
+                                        </div>
+
                                         <div class="EventApp-rating">
-                                            <img class="EventApp-rating-inline-icon" src="/images/icons/img_rating.png" alt="Rating" />
+                                            <img class="EventApp-rating-inline-icon"
+                                                 src="/images/icons/img_rating.png"
+                                                 alt="Rating" />
                                             <span>@eventCard.RatingValue</span>
                                         </div>
                                     </div>
 
                                     <div class="EventApp-description-block">
-                                        <p class="EventApp-description-text">@description</p>
-                                        <a class="EventApp-read-more-link" href="/event/@eventCard.EventId">Lees meer</a>
+                                        <p class="EventApp-description-text">
+                                            @description
+                                        </p>
+
+                                        <a class="EventApp-read-more-link"
+                                           href="/event/@eventCard.EventId">
+                                            Lees meer
+                                        </a>
                                     </div>
 
                                     <div class="EventApp-bottom-row">
-                                        <div class="EventApp-extra-meta">@compactAccessibilityText</div>
+                                        <div class="EventApp-extra-meta">
+                                            @compactAccessibilityText
+                                        </div>
+
                                         <div class="EventApp-card-footer">
-                                            <a class="EventApp-order-btn" href="/event/@eventCard.EventId">Bestel</a>
+                                            <a class="EventApp-order-btn"
+                                               href="/event/@eventCard.EventId">
+                                                Bestel
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
@@ -277,3 +388,93 @@
         </main>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('filter-form');
+
+        if (!form) return;
+
+        const sidebar = document.querySelector('.EventApp-sidebar');
+        const sidebarInner = document.querySelector('.EventApp-sidebar-inner');
+        const storageKey = 'eventapp-filter-scroll:' + location.pathname;
+
+        // Herstel de scrollpositie na het filteren.
+        try {
+            const saved = JSON.parse(
+                sessionStorage.getItem(storageKey) || 'null'
+            );
+
+            sessionStorage.removeItem(storageKey);
+
+            if (saved) {
+                requestAnimationFrame(function () {
+                    window.scrollTo(saved.x, saved.y);
+
+                    if (sidebar) {
+                        sidebar.scrollTop = saved.sidebar;
+                    }
+
+                    if (sidebarInner) {
+                        sidebarInner.scrollTop = saved.inner;
+                    }
+                });
+            }
+        } catch (error) {
+            // Filteren blijft werken zonder browseropslag.
+        }
+
+        // Bewaar de scrollpositie voor het herladen.
+        form.addEventListener('submit', function () {
+            try {
+                sessionStorage.setItem(storageKey, JSON.stringify({
+                    x: window.scrollX,
+                    y: window.scrollY,
+                    sidebar: sidebar ? sidebar.scrollTop : 0,
+                    inner: sidebarInner ? sidebarInner.scrollTop : 0
+                }));
+            } catch (error) {
+                // Browseropslag is niet noodzakelijk voor filteren.
+            }
+        });
+
+        // Houd de prijsschuiven en invoervelden gelijk.
+        const minInput = document.getElementById('min-input');
+        const maxInput = document.getElementById('max-input');
+        const minRange = form.querySelector('.min-range');
+        const maxRange = form.querySelector('.max-range');
+
+        minRange.addEventListener('input', function () {
+            minInput.value = minRange.value;
+
+            if (Number(minInput.value) > Number(maxInput.value)) {
+                maxInput.value = minInput.value;
+                maxRange.value = minInput.value;
+            }
+        });
+
+        maxRange.addEventListener('input', function () {
+            maxInput.value = maxRange.value;
+
+            if (Number(maxInput.value) < Number(minInput.value)) {
+                minInput.value = maxInput.value;
+                minRange.value = maxInput.value;
+            }
+        });
+
+        minInput.addEventListener('input', function () {
+            minRange.value = minInput.value;
+        });
+
+        maxInput.addEventListener('input', function () {
+            maxRange.value = maxInput.value;
+        });
+
+        // Verstuur alle filters zodra een waarde verandert.
+        form.addEventListener('change', function (event) {
+            if (event.target.matches('input')) {
+                form.requestSubmit();
+            }
+        });
+    });
+</script>
