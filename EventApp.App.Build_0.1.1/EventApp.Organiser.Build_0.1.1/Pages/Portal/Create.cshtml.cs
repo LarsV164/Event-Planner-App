@@ -82,8 +82,13 @@ namespace EventApp.OrganiserPortal.Pages.Portal
                 ModelState.AddModelError(string.Empty, "Upload minimaal één afbeelding.");
             }
 
-            // The address fields stay required: in map mode they are filled automatically
-            // from the pin by create-event-map.js, so they are posted with a value.
+            // The address fields stay required in normal mode.
+            // When using map mode ("Geen adres beschikbaar"), house number can be omitted.
+            if (Input.NoAddressMode == true)
+            {
+                ModelState.Remove(nameof(Input.HouseNumber));
+            }
+
             if (!ModelState.IsValid)
             {
                 return Page();

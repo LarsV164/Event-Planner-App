@@ -48,10 +48,11 @@ namespace EventApp.OrganiserPortal.Models
         [Required, Display(Name = "Straat")]
         public string Street { get; set; } = "";
 
-        [Required(ErrorMessage = "Huisnummer is verplicht")]
         [Display(Name = "Huisnummer")]
         [Range(1, int.MaxValue, ErrorMessage = "Voer een geldig huisnummer in")]
         public int? HouseNumber { get; set; }
+
+        public bool? NoAddressMode { get; set; }
 
         [Display(Name = "Toevoeging")]
         public string? HouseNumberAddition { get; set; }
