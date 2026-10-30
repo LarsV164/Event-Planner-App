@@ -3,6 +3,16 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EventApp.OrganiserPortal.Models
 {
+    public enum evenStatus 
+    {
+        Draft,
+        Soldout,
+        Postponed,
+        TicketSaleStarted,
+        TicketSaleEnded,
+        EventStarted,
+        EventEnded
+    }
     public class CreateEventInputModel
     {
         [Required(ErrorMessage = "Naam van het evenement is verplicht.")]
@@ -15,6 +25,12 @@ namespace EventApp.OrganiserPortal.Models
         public string Description { get; set; } = string.Empty;
 
         public string? Address { get; set; }
+
+        /// <summary>
+        /// True when the organiser has no address and picked the location on the map instead.
+        /// The separate address fields stay required; they are filled automatically from the map pin.
+        /// </summary>
+        public bool NoAddressMode { get; set; }
 
         public decimal? Latitude { get; set; }
 
@@ -43,9 +59,9 @@ namespace EventApp.OrganiserPortal.Models
         [Required(ErrorMessage = "Straatnaam is verplicht.")]
         public string Street { get; set; } = "";
 
-        [Required(ErrorMessage = "Huisnummer is verplicht.")]
-        [Display(Name = "Huisnummer*")]
-        [Range(1, int.MaxValue, ErrorMessage = "Huisnummer is verplicht")]
+        [Required(ErrorMessage = "Huisnummer is verplicht")]
+        [Display(Name = "Huisnummer")]
+        [Range(1, int.MaxValue, ErrorMessage = "Voer een geldig huisnummer in")]
         public int? HouseNumber { get; set; }
 
         [Display(Name = "Toevoeging")]
@@ -79,20 +95,5 @@ namespace EventApp.OrganiserPortal.Models
         [Display(Name = "Geschikt voor kinderen*")]
         [Required(ErrorMessage = "Geef aan of het geschikt is voor kinderen")]
         public bool? ChildrenFriendly { get; set; }
-
-        [Display(Name = "Telefoonnummer")]
-        [Phone(ErrorMessage = "Vul een geldig telefoonnummer in.")]
-        [StringLength(30, ErrorMessage = "Gebruik maximaal 30 tekens voor het telefoonnummer.")]
-        public string? ContactPhone { get; set; }
-
-        [Display(Name = "E-mailadres")]
-        [EmailAddress(ErrorMessage = "Vul een geldig e-mailadres in.")]
-        [StringLength(254, ErrorMessage = "Gebruik maximaal 254 tekens voor het e-mailadres.")]
-        public string? ContactEmail { get; set; }
-
-        [Display(Name = "Website")]
-        [Url(ErrorMessage = "Vul een geldig websiteadres in, bijvoorbeeld https://www.voorbeeld.nl.")]
-        [StringLength(2048, ErrorMessage = "Het websiteadres is te lang.")]
-        public string? WebsiteUrl { get; set; }
     }
 }

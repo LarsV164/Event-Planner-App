@@ -89,14 +89,14 @@
                     <h2>Locatie</h2>
                 </div>
 
-                <div class="portal-form-group--full">
+                <div class="portal-form-group--full js-location-fields">
                     <div class="three-columns">
                         <div class="portal-form-group">
                             <label asp-for="Input.Street"></label>
                             <input asp-for="Input.Street" autocomplete="address-line1" />
                             <span asp-validation-for="Input.Street"></span>
                         </div>
-                        <div class="portal-form-group">
+                        <div class="portal-form-group portal-form-group-huisnummer">
                             <label asp-for="Input.HouseNumber"></label>
                             <input asp-for="Input.HouseNumber" />
                             <span asp-validation-for="Input.HouseNumber"></span>
@@ -108,7 +108,7 @@
                     </div>
                 </div>
 
-                <div class="portal-form-group--full">
+                <div class="portal-form-group--full js-location-fields">
                     <div class="three-columns">
                         <div class="portal-form-group">
                             <label asp-for="Input.PostalCode"></label>
@@ -127,35 +127,44 @@
                     </div>
                 </div>
 
-                <!-- ORGINELE ADSRES EN KAART
+                <!-- ADRES EN KAART -->
 
-                <div class="portal-form-group portal-form-group--full">
-                    <label asp-for="Input.Address">Adres</label>
-                    <div class="portal-address-row">
-                        <input asp-for="Input.Address"
-                               id="address-input"
-                               placeholder="Typ een adres of plaats een pin op de kaart" />
-                        <button type="button" id="resolve-address-btn" class="portal-secondary-link">Zoek adres</button>
+                <div class="portal-form-group portal-form-group--full" id="map-group" hidden>
+                    <div class="portal-form-group portal-form-group--full" id="address-group">
+                        <label asp-for="Input.Address">Adres</label>
+                        <div class="portal-address-row">
+                            <input asp-for="Input.Address"
+                                   id="address-input"
+                                   placeholder="Zoek een plaats of adres" />
+                            <button type="button" id="resolve-address-btn" class="portal-secondary-link">Zoek</button>
+                        </div>
+                        <span asp-validation-for="Input.Address"></span>
                     </div>
-                    <span asp-validation-for="Input.Address"></span>
-                </div>
 
-                <div class="portal-form-group portal-form-group--full">
                     <label>Locatie kiezen</label>
                     <div class="portal-map-picker">
                         <div id="event-location-map" class="portal-map-canvas"></div>
                     </div>
                     <p class="portal-map-help">
-                        Plaats een pin op de kaart of typ een adres. De dichtstbijzijnde match wordt automatisch gekozen.
+                        Plaats een pin op de kaart of zoek een plaats. De dichtstbijzijnde match wordt automatisch gekozen.
                     </p>
-                    <div id="map-status" class="portal-map-status" aria-live="polite"></div>
+                    <!-- <div id="map-status" class="portal-map-status" aria-live="polite"></div> -->
                     <span asp-validation-for="Input.Latitude"></span>
                     <span asp-validation-for="Input.Longitude"></span>
                 </div>
 
                 <input asp-for="Input.Latitude" type="hidden" id="latitude-input" />
                 <input asp-for="Input.Longitude" type="hidden" id="longitude-input" />
-                -->
+                <input asp-for="Input.NoAddressMode" type="hidden" id="no-address-mode-input" />
+
+                <div class="portal-form-group portal-form-group--full">
+                    <div class="portal-form-group">
+                        <button type="button" id="no-address-btn" class="portal-secondary-link">Geen Adres Beschikbaar</button>
+                    </div>
+                </div>
+                
+
+                
 
                 <!-- MEDIA -->
 
@@ -460,6 +469,12 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+
+    <script src="~/js/create-event-map.js" asp-append-version="true"></script>
 
     <script src="~/js/image-upload-strip.js" asp-append-version="true"></script>
 

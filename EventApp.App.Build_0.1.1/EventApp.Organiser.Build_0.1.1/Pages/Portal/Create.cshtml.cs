@@ -17,15 +17,18 @@ namespace EventApp.OrganiserPortal.Pages.Portal
         private readonly IOrganiserRepository _organiserRepository;
         private readonly IWebHostEnvironment _environment;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<CreateModel> _logger;
 
         public CreateModel(
             IOrganiserRepository organiserRepository,
             IWebHostEnvironment environment,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            ILogger<CreateModel> logger)
         {
             _organiserRepository = organiserRepository;
             _environment = environment;
             _configuration = configuration;
+            _logger = logger;
         }
 
         [BindProperty]
@@ -80,6 +83,16 @@ namespace EventApp.OrganiserPortal.Pages.Portal
             if (!Images.Any())
             {
                 ModelState.AddModelError(nameof(Images), "Upload minimaal één afbeelding.");
+            }
+
+            // House number only required when NOT in map/no-address mode
+            if (Input.NoAddressMode == true)
+            {
+                ModelState.Remove(nameof(Input.HouseNumber));
+            }
+            else if (Input.HouseNumber == null)
+            {
+                ModelState.AddModelError(nameof(Input.HouseNumber), "Huisnummer is verplicht");
             }
 
             if (!ModelState.IsValid)
@@ -171,6 +184,10 @@ namespace EventApp.OrganiserPortal.Pages.Portal
                 }
 
                 await _organiserRepository.AddEventImagesAsync(eventId, finalImageUrls);
+
+                _logger.LogInformation(
+                    "Evenement {EventId} is succesvol aangemaakt.",
+                    eventId);
 
                 return RedirectToPage("/Portal/Dashboard");
             }

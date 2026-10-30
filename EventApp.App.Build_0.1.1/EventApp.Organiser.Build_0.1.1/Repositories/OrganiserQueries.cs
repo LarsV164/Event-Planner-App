@@ -72,6 +72,13 @@ FROM dbo.events;";
 SELECT ISNULL(MAX(location_id), 0) + 1
 FROM dbo.locations;";
 
+        public const string FindLocationIdByCoordinates = @"
+SELECT TOP 1 location_id
+FROM dbo.locations
+WHERE (latitude = @Latitude OR (latitude IS NULL AND @Latitude IS NULL))
+  AND (longitude = @Longitude OR (longitude IS NULL AND @Longitude IS NULL))
+ORDER BY location_id;";
+
         public const string GetNextTicketPriceId = @"
 SELECT ISNULL(MAX(event_ticket_price_id), 0) + 1
 FROM dbo.event_ticket_prices;";

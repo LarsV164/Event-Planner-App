@@ -263,3 +263,51 @@
         align-items: flex-start;
     }
 }
+
+
+/* Bovenbalk over de volledige breedte van de kaart */
+.dashboard-event-topbar {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px 76px 20px 24px;
+    background: var(--misc-panel);
+    border-bottom: 1px solid var(--misc-border);
+}
+
+    /* Evenementnaam links */
+    .dashboard-event-topbar h2 {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+/* Status rechts */
+.dashboard-event-status-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    color: white;
+}
+
+    /* Dropdown */
+    .dashboard-event-status-group select {
+        min-width: 220px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1px solid rgba(245, 247, 251, 0.08);
+        background: #12192B;
+        color: white;
+        text-align: center;
+        /*pijltje uit de dropdown weghalen*/
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: none;
+    }
+
+
