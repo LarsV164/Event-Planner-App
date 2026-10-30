@@ -52,8 +52,6 @@ namespace EventApp.OrganiserPortal.Models
         [Range(1, int.MaxValue, ErrorMessage = "Voer een geldig huisnummer in")]
         public int? HouseNumber { get; set; }
 
-        public bool? NoAddressMode { get; set; }
-
         [Display(Name = "Toevoeging")]
         public string? HouseNumberAddition { get; set; }
 
