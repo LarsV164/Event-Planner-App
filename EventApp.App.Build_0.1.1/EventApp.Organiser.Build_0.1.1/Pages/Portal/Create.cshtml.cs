@@ -82,11 +82,14 @@ namespace EventApp.OrganiserPortal.Pages.Portal
                 ModelState.AddModelError(string.Empty, "Upload minimaal één afbeelding.");
             }
 
-            // The address fields stay required in normal mode.
-            // When using map mode ("Geen adres beschikbaar"), house number can be omitted.
+            // House number only required when NOT in map/no-address mode
             if (Input.NoAddressMode == true)
             {
                 ModelState.Remove(nameof(Input.HouseNumber));
+            }
+            else if (Input.HouseNumber == null)
+            {
+                ModelState.AddModelError(nameof(Input.HouseNumber), "Huisnummer is verplicht");
             }
 
             if (!ModelState.IsValid)
