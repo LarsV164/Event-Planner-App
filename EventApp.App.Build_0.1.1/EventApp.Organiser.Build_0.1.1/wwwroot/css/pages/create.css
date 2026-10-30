@@ -97,6 +97,10 @@
     border: 2px solid rgba(124, 92, 255, 0.7);
 }
 
+.portal-form-group-huisnummer input{
+    border: 2px solid rgba(124, 92, 255, 0.7);
+}
+
 .portal-form-group textarea {
     min-height: 140px;
     resize: vertical;
