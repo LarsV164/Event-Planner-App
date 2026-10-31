@@ -145,6 +145,29 @@ VALUES (
     0
 );";
 
+        public const string UpdateEventExtras = @"
+UPDATE dbo.events
+SET
+    contact_phone = @ContactPhone,
+    contact_email = @ContactEmail,
+    website_url = @WebsiteUrl
+WHERE event_id = @EventId
+  AND organiser_id = @OrganiserId;";
+
+        public const string InsertEventAttachment = @"
+INSERT INTO dbo.event_attachments (
+    event_id,
+    file_name,
+    content_type,
+    file_content
+)
+VALUES (
+    @EventId,
+    @FileName,
+    @ContentType,
+    @FileContent
+);";
+
         public const string InsertTicketPrice = @"
 INSERT INTO dbo.event_ticket_prices (
     event_ticket_price_id,

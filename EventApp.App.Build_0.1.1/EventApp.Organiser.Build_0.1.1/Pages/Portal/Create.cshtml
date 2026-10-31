@@ -443,14 +443,20 @@
                             <span asp-validation-for="Input.WebsiteUrl"></span>
                         </div>
 
-                        <div class="portal-form-group portal-form-group--full">
-                            <label asp-for="Attachments">Bijlagen</label>
-                            <input asp-for="Attachments" type="file" multiple aria-describedby="attachments-help" />
+                        <div class="portal-form-group portal-form-group--full" id="attachments-upload">
+                            <label for="attachments-input">Bijlagen</label>
 
-                            <p id="attachments-help" class="portal-extra-help">
-                                Voeg eventueel aanvullende bestanden toe,
-                                zoals het programma van het evenement.
-                            </p>
+                            <div class="portal-form-group">
+                                <button type="button" id="add-attachments-btn" class="portal-secondary-link" aria-describedby="attachments-help">Selecteer of sleep bestanden</button>
+                            </div>
+
+                            <input asp-for="Attachments" id="attachments-input" type="file" accept=".pdf,.docx,.xlsx,.txt,.jpg,.jpeg,.png,.webp" multiple hidden />
+
+                            <p id="attachments-help" class="portal-extra-help">Toegestaan: PDF, Word (.docx), Excel (.xlsx), TXT, JPG/JPEG, PNG en WEBP. Maximaal 5 bestanden van ieder 5 MB.</p>
+
+                            <div id="attachments-list-shell" class="portal-image-strip-shell" hidden>
+                                <ul id="attachments-list" class="portal-attachment-list" aria-live="polite"></ul>
+                            </div>
 
                             <span asp-validation-for="Attachments"></span>
                         </div>
@@ -626,6 +632,82 @@
                 hiddenInputsId: 'accessibility-hidden-inputs',
                 name: 'Input.AccessibilityOptions'
             });
+        })();
+    </script>
+    <script>
+        (() => {
+            const input = document.getElementById('attachments-input');
+            const button = document.getElementById('add-attachments-btn');
+            const zone = document.getElementById('attachments-upload');
+            const shell = document.getElementById('attachments-list-shell');
+            const list = document.getElementById('attachments-list');
+
+            if (!input || !button || !zone || !shell || !list) return;
+
+            let files = Array.from(input.files);
+
+            function updateFiles() {
+                const transfer = new DataTransfer();
+
+                files.forEach(file => transfer.items.add(file));
+                input.files = transfer.files;
+
+                list.replaceChildren();
+                shell.hidden = files.length === 0;
+
+                files.forEach((file, index) => {
+                    const item = document.createElement('li');
+
+                    const name = document.createElement('span');
+                    name.className = 'portal-attachment-name';
+                    name.textContent = file.name;
+
+                    const remove = document.createElement('button');
+                    remove.type = 'button';
+                    remove.className = 'portal-attachment-remove';
+                    remove.textContent = 'Verwijderen';
+                    remove.setAttribute('aria-label', `${file.name} verwijderen`);
+
+                    remove.addEventListener('click', () => {
+                        files.splice(index, 1);
+                        updateFiles();
+                    });
+
+                    item.append(name, remove);
+                    list.appendChild(item);
+                });
+            }
+
+            function addFiles(selectedFiles) {
+                for (const file of selectedFiles) {
+                    const alreadyAdded = files.some(existing =>
+                        existing.name === file.name &&
+                        existing.size === file.size &&
+                        existing.lastModified === file.lastModified
+                    );
+
+                    if (!alreadyAdded) files.push(file);
+                }
+
+                updateFiles();
+            }
+
+            button.addEventListener('click', () => input.click());
+
+            input.addEventListener('change', () => {
+                addFiles(Array.from(input.files));
+            });
+
+            zone.addEventListener('dragover', event => {
+                event.preventDefault();
+            });
+
+            zone.addEventListener('drop', event => {
+                event.preventDefault();
+                addFiles(Array.from(event.dataTransfer.files));
+            });
+
+            updateFiles();
         })();
     </script>
 }

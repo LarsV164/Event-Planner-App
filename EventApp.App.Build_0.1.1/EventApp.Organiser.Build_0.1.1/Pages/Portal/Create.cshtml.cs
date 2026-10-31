@@ -13,6 +13,20 @@ namespace EventApp.OrganiserPortal.Pages.Portal
     {
         private static readonly string[] AllowedImageExtensions = [".jpg", ".jpeg", ".png", ".webp"];
         private const long MaxImageSizeBytes = 5 * 1024 * 1024;
+        private const int MaxAttachmentCount = 5;
+        private const long MaxAttachmentSizeBytes = 5 * 1024 * 1024;
+
+        private static readonly Dictionary<string, string> AllowedAttachmentTypes = new()
+        {
+            [".pdf"] = "application/pdf",
+            [".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            [".xlsx"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            [".txt"] = "text/plain",
+            [".jpg"] = "image/jpeg",
+            [".jpeg"] = "image/jpeg",
+            [".png"] = "image/png",
+            [".webp"] = "image/webp"
+        };
 
         private readonly IOrganiserRepository _organiserRepository;
         private readonly IWebHostEnvironment _environment;
@@ -86,13 +100,43 @@ namespace EventApp.OrganiserPortal.Pages.Portal
             }
 
             // House number only required when NOT in map/no-address mode
-            if (Input.NoAddressMode == true)
+            if (Input.NoAddressMode)
             {
-                ModelState.Remove(nameof(Input.HouseNumber));
+                ModelState.Remove("Input.HouseNumber");
             }
-            else if (Input.HouseNumber == null)
+            if (Attachments.Count > MaxAttachmentCount)
             {
-                ModelState.AddModelError(nameof(Input.HouseNumber), "Huisnummer is verplicht");
+                ModelState.AddModelError(nameof(Attachments),
+                    "Voeg maximaal 5 bijlagen toe.");
+            }
+
+            foreach (var attachment in Attachments)
+            {
+                var fileName = Path.GetFileName(attachment.FileName.Replace('\\', '/'));
+                var extension = Path.GetExtension(fileName).ToLowerInvariant();
+
+                if (string.IsNullOrWhiteSpace(fileName) || fileName.Length > 255)
+                {
+                    ModelState.AddModelError(nameof(Attachments),
+                        "Gebruik een bestandsnaam van maximaal 255 tekens.");
+                }
+
+                if (attachment.Length <= 0)
+                {
+                    ModelState.AddModelError(nameof(Attachments),
+                        $"Bijlage '{fileName}' is leeg.");
+                }
+                else if (attachment.Length > MaxAttachmentSizeBytes)
+                {
+                    ModelState.AddModelError(nameof(Attachments),
+                        $"Bijlage '{fileName}' is groter dan 5 MB.");
+                }
+
+                if (!AllowedAttachmentTypes.ContainsKey(extension))
+                {
+                    ModelState.AddModelError(nameof(Attachments),
+                        "Gebruik voor bijlagen PDF, DOCX, XLSX, TXT, JPG, JPEG, PNG of WEBP.");
+                }
             }
 
             if (!ModelState.IsValid)
@@ -121,6 +165,23 @@ namespace EventApp.OrganiserPortal.Pages.Portal
 
             try
             {
+                Input.AttachmentsToSave.Clear();
+
+                foreach (var attachment in Attachments)
+                {
+                    var fileName = Path.GetFileName(attachment.FileName.Replace('\\', '/'));
+                    var extension = Path.GetExtension(fileName).ToLowerInvariant();
+
+                    using var stream = new MemoryStream();
+                    await attachment.CopyToAsync(stream);
+
+                    Input.AttachmentsToSave.Add(new EventAttachmentInputModel
+                    {
+                        FileName = fileName,
+                        ContentType = AllowedAttachmentTypes[extension],
+                        FileContent = stream.ToArray()
+                    });
+                }
                 for (var i = 0; i < Images.Count; i++)
                 {
                     var image = Images[i];

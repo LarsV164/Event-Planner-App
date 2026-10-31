@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace EventApp.OrganiserPortal.Models
 {
@@ -95,5 +97,23 @@ namespace EventApp.OrganiserPortal.Models
         [Display(Name = "Geschikt voor kinderen*")]
         [Required(ErrorMessage = "Geef aan of het geschikt is voor kinderen")]
         public bool? ChildrenFriendly { get; set; }
+
+        [Display(Name = "Telefoonnummer")]
+        [Phone(ErrorMessage = "Vul een geldig telefoonnummer in.")]
+        [StringLength(30, ErrorMessage = "Gebruik maximaal 30 tekens voor het telefoonnummer.")]
+        public string? ContactPhone { get; set; }
+
+        [Display(Name = "E-mailadres")]
+        [EmailAddress(ErrorMessage = "Vul een geldig e-mailadres in.")]
+        [StringLength(254, ErrorMessage = "Gebruik maximaal 254 tekens voor het e-mailadres.")]
+        public string? ContactEmail { get; set; }
+
+        [Display(Name = "Website")]
+        [Url(ErrorMessage = "Vul een geldig websiteadres in, bijvoorbeeld https://www.voorbeeld.nl.")]
+        [StringLength(2048, ErrorMessage = "Gebruik maximaal 2048 tekens voor het websiteadres.")]
+        public string? WebsiteUrl { get; set; }
+        [BindNever]
+        [ValidateNever]
+        public List<EventAttachmentInputModel> AttachmentsToSave { get; set; } = new();
     }
 }

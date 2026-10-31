@@ -386,3 +386,34 @@ textarea.input-validation-error {
 .portal-extras-content {
     margin-top: 20px;
 }
+
+.portal-attachment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+    .portal-attachment-list li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+.portal-attachment-name {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: var(--text-primary);
+}
+
+.portal-attachment-remove {
+    flex-shrink: 0;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    text-decoration: underline;
+    cursor: pointer;
+}
