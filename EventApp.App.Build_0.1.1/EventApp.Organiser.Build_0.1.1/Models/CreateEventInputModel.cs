@@ -18,6 +18,7 @@ namespace EventApp.OrganiserPortal.Models
     public class CreateEventInputModel
     {
         [Required(ErrorMessage = "Naam van het evenement is verplicht.")]
+        [StringLength(100, ErrorMessage = "Gebruik maximaal 100 tekens voor de evenementnaam.")]
         public string EventName { get; set; } = string.Empty;
 
         [RegularExpression("Binnen|Buiten|Beide", ErrorMessage = "Kies Binnen, Buiten of Beide.")]
@@ -59,12 +60,12 @@ namespace EventApp.OrganiserPortal.Models
         //NIEUWE DINGEN TOEGEVOED
         [Display(Name = "Straat*")]
         [Required(ErrorMessage = "Straatnaam is verplicht.")]
+        [RegularExpression(@"^[^0-9]+$", ErrorMessage = "Vul een straatnaam zonder cijfers in. Zet het huisnummer in het aparte veld.")]
         public string Street { get; set; } = "";
 
         [Required(ErrorMessage = "Huisnummer is verplicht")]
         [Display(Name = "Huisnummer")]
-        [Range(1, int.MaxValue, ErrorMessage = "Voer een geldig huisnummer in")]
-        public int? HouseNumber { get; set; }
+        [Range(1, int.MaxValue, ErrorMessage = "Vul een heel huisnummer van 1 of hoger in.")] public int? HouseNumber { get; set; }
 
         [Display(Name = "Toevoeging")]
         public string? HouseNumberAddition { get; set; }
@@ -76,6 +77,7 @@ namespace EventApp.OrganiserPortal.Models
 
         [Display(Name = "Plaats*")]
         [Required(ErrorMessage = "Plaats is verplicht.")]
+        [RegularExpression(@"^[^0-9]+$", ErrorMessage = "Vul een plaatsnaam zonder cijfers in.")]
         public string City { get; set; } = "";
 
         [Display(Name = "Startdatum*")]
@@ -99,8 +101,7 @@ namespace EventApp.OrganiserPortal.Models
         public bool? ChildrenFriendly { get; set; }
 
         [Display(Name = "Telefoonnummer")]
-        [Phone(ErrorMessage = "Vul een geldig telefoonnummer in.")]
-        [StringLength(30, ErrorMessage = "Gebruik maximaal 30 tekens voor het telefoonnummer.")]
+        [RegularExpression(@"^\+?[0-9](?: ?[0-9]){6,14}$", ErrorMessage = "Vul 7 tot 15 cijfers in. Spaties en een + aan het begin zijn toegestaan.")]
         public string? ContactPhone { get; set; }
 
         [Display(Name = "E-mailadres")]

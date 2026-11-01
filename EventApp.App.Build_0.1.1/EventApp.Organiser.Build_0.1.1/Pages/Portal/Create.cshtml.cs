@@ -72,6 +72,24 @@ namespace EventApp.OrganiserPortal.Pages.Portal
             LoadTicketTypes();
         }
 
+        private bool IsBackgroundSave =>
+        HttpContext?.Request.Headers["X-Event-Form"].ToString() == "1";
+
+        private IActionResult ShowFormErrors(int statusCode = 422)
+        {
+            if (!IsBackgroundSave)
+            {
+                return Page();
+            }
+
+            var details = new ValidationProblemDetails(ModelState)
+            {
+                Status = statusCode
+            };
+
+            return new JsonResult(details) { StatusCode = statusCode };
+        }
+
         public async Task<IActionResult> OnPostAsync()
         {
             LoadTicketTypes();
@@ -100,9 +118,19 @@ namespace EventApp.OrganiserPortal.Pages.Portal
             }
 
             // House number only required when NOT in map/no-address mode
+            const string houseNumberKey = "Input.HouseNumber";
+
             if (Input.NoAddressMode)
             {
-                ModelState.Remove("Input.HouseNumber");
+                ModelState.Remove(houseNumberKey);
+            }
+            else if (Input.HouseNumber is null &&
+                     ModelState.TryGetValue(houseNumberKey, out var houseNumberState) &&
+                     houseNumberState.Errors.Count > 0 &&
+                     !string.IsNullOrWhiteSpace(houseNumberState.AttemptedValue))
+            {
+                houseNumberState.Errors.Clear();
+                ModelState.AddModelError(houseNumberKey, "Vul een heel huisnummer van 1 of hoger in, bijvoorbeeld 12.");
             }
             if (Attachments.Count > MaxAttachmentCount)
             {
@@ -139,9 +167,39 @@ namespace EventApp.OrganiserPortal.Pages.Portal
                 }
             }
 
+            DateTime vandaag = DateTime.Today;
+
+            if (Input.StartDate is DateTime startdatum && startdatum.Date < vandaag)
+            {
+                ModelState.AddModelError("Input.StartDate", "Kies vandaag of een latere startdatum.");
+            }
+
+            if (Input.EndDate is DateTime einddatum && einddatum.Date < vandaag)
+            {
+                ModelState.AddModelError("Input.EndDate", "Kies vandaag of een latere einddatum.");
+            }
+
+            if (Input.StartDate.HasValue && Input.EndDate.HasValue)
+            {
+                DateTime start = Input.StartDate.Value.Date;
+                DateTime einde = Input.EndDate.Value.Date;
+
+                if (einde >= vandaag && einde < start)
+                {
+                    ModelState.AddModelError("Input.EndDate", "De einddatum mag niet vóór de startdatum liggen.");
+                }
+                else if (einde == start &&
+                         Input.StartTime.HasValue &&
+                         Input.EndTime.HasValue &&
+                         Input.EndTime.Value <= Input.StartTime.Value)
+                {
+                    ModelState.AddModelError("Input.EndTime", "Kies een eindtijd die later is dan de starttijd.");
+                }
+            }
+
             if (!ModelState.IsValid)
             {
-                return Page();
+                return ShowFormErrors();
             }
 
             var organiserIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -188,21 +246,21 @@ namespace EventApp.OrganiserPortal.Pages.Portal
 
                     if (image.Length <= 0)
                     {
-                        ModelState.AddModelError(string.Empty, $"Afbeelding {i + 1} is leeg.");
-                        return Page();
+                        ModelState.AddModelError(nameof(Images), $"Afbeelding {i + 1} is leeg.");
+                        return ShowFormErrors();
                     }
 
                     if (image.Length > MaxImageSizeBytes)
                     {
-                        ModelState.AddModelError(string.Empty, $"Afbeelding {i + 1} is groter dan 5 MB.");
-                        return Page();
+                        ModelState.AddModelError(nameof(Images), $"Afbeelding {i + 1} is groter dan 5 MB.");
+                        return ShowFormErrors();
                     }
 
                     var extension = Path.GetExtension(image.FileName).ToLowerInvariant();
                     if (!AllowedImageExtensions.Contains(extension))
                     {
-                        ModelState.AddModelError(string.Empty, $"Afbeelding {i + 1} moet jpg, jpeg, png of webp zijn.");
-                        return Page();
+                        ModelState.AddModelError(nameof(Images), $"Afbeelding {i + 1} moet jpg, jpeg, png of webp zijn.");
+                        return ShowFormErrors();
                     }
 
                     var fileName = $"{Guid.NewGuid():N}{extension}";
@@ -250,6 +308,11 @@ namespace EventApp.OrganiserPortal.Pages.Portal
                     "Evenement {EventId} is succesvol aangemaakt.",
                     eventId);
 
+                if (IsBackgroundSave)
+                {
+                    return new JsonResult(new { redirectUrl = Url.Page("/Portal/Dashboard") });
+                }
+
                 return RedirectToPage("/Portal/Dashboard");
             }
             catch (Exception ex)
@@ -262,8 +325,9 @@ namespace EventApp.OrganiserPortal.Pages.Portal
                     }
                 }
 
-                ModelState.AddModelError(string.Empty, $"Het evenement kon niet opgeslagen worden. {ex.Message}");
-                return Page();
+                _logger.LogError(ex, "Opslaan van het evenement is mislukt.");
+                ModelState.AddModelError(string.Empty, "Het evenement kon niet worden opgeslagen.");
+                return ShowFormErrors(500);
             }
         }
     }

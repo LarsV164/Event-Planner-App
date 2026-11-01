@@ -91,9 +91,13 @@
     background-size: 12px 8px;
     cursor: pointer;
 }
+
 .portal-form-group input[data-val-required],
 .portal-form-group select[data-val-required],
-.portal-form-group textarea[data-val-required] {
+.portal-form-group textarea[data-val-required],
+.portal-form-group input[required],
+.portal-form-group select[required],
+.portal-form-group textarea[required] {
     border: 2px solid rgba(124, 92, 255, 0.7);
 }
 
@@ -416,4 +420,13 @@ textarea.input-validation-error {
     color: var(--text-secondary);
     text-decoration: underline;
     cursor: pointer;
+}
+
+.portal-image-upload #add-images-btn {
+    border: 2px solid rgba(124, 92, 255, 0.7);
+}
+
+.portal-image-upload:has(#images-error.field-validation-error) #add-images-btn {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12);
 }

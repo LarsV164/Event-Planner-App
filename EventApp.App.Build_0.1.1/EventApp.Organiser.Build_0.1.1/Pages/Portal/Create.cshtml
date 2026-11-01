@@ -3,6 +3,7 @@
 
 @{
     ViewData["Title"] = "Evenement aanmaken";
+    var vandaag = DateTime.Today.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 }
 
 @section Head {
@@ -19,10 +20,10 @@
         <h1>Evenement aanmaken</h1>
         <p>Gemarkeerde velden en velden met een * zijn verplicht.</p>
 
-        <form method="post" enctype="multipart/form-data" class="portal-form">
-            <!-- DIT ZORGT VOOR DUBBELE ERRORS
-                <div asp-validation-summary="All" class="portal-validation-summary"></div>
-            -->
+        <form id="create-event-form" method="post" enctype="multipart/form-data" class="portal-form">
+            <div id="event-save-feedback" role="alert" tabindex="-1">
+                <div asp-validation-summary="ModelOnly" class="portal-validation-summary"></div>
+            </div>
 
             <div class="portal-form-grid">
 
@@ -33,9 +34,9 @@
 
 
                 <div class="portal-form-group">
-
-                    <label asp-for="Input.EventName">Evenement naam*</label>
-                    <input asp-for="Input.EventName" />
+                    <label asp-for="Input.EventName">Evenementnaam *</label>
+                    <input asp-for="Input.EventName" maxlength="100" aria-describedby="event-name-help" />
+                    <small id="event-name-help" class="portal-extra-help">Maximaal 100 tekens.</small>
                     <span asp-validation-for="Input.EventName"></span>
                 </div>
 
@@ -59,8 +60,7 @@
                     <div class="portal-form-grid">
                         <div class="portal-form-group">
                             <label asp-for="Input.StartDate"></label>
-                            <input asp-for="Input.StartDate" type="date" />
-                            <span asp-validation-for="Input.StartDate"></span>
+                            <input asp-for="Input.StartDate" type="date" min="@vandaag" max="9999-12-31" data-msg-min="Kies vandaag of een latere startdatum." data-msg-max="Gebruik een jaartal van maximaal 4 cijfers." />                            <span asp-validation-for="Input.StartDate"></span>
                         </div>
 
                         <div class="portal-form-group">
@@ -71,7 +71,7 @@
 
                         <div class="portal-form-group">
                             <label asp-for="Input.EndDate"></label>
-                            <input asp-for="Input.EndDate" type="date" />
+                            <input asp-for="Input.EndDate" type="date" min="@vandaag" max="9999-12-31" data-msg-min="De einddatum mag niet vóór vandaag of vóór de startdatum liggen." data-msg-max="Gebruik een jaartal van maximaal 4 cijfers." />
                             <span asp-validation-for="Input.EndDate"></span>
                         </div>
 
@@ -98,8 +98,7 @@
                         </div>
                         <div class="portal-form-group portal-form-group-huisnummer">
                             <label asp-for="Input.HouseNumber"></label>
-                            <input asp-for="Input.HouseNumber" />
-                            <span asp-validation-for="Input.HouseNumber"></span>
+                            <input asp-for="Input.HouseNumber" type="text" inputmode="numeric" data-rule-digits="true" data-msg-digits="Vul een heel huisnummer van 1 of hoger in." data-msg-number="Vul een heel huisnummer van 1 of hoger in." />                            <span asp-validation-for="Input.HouseNumber"></span>
                         </div>
                         <div class="portal-form-group">
                             <label asp-for="Input.HouseNumberAddition"></label>
@@ -181,8 +180,7 @@
 
                 <div class="portal-form-group portal-form-group--full portal-image-upload">
                     <div class="portal-form-group">
-                        <button type="button" id="add-images-btn" class="portal-secondary-link">Selecteer of sleep afbeeldingen</button>
-                    </div>
+                        <button type="button" id="add-images-btn" class="portal-secondary-link" aria-describedby="images-error">Selecteer of sleep afbeeldingen</button>                    </div>
                     <input id="images-input" name="Images" type="file" accept="image/*" multiple hidden />
 
                     <div class="portal-image-strip-shell" id="image-strip-shell" hidden>
@@ -190,7 +188,7 @@
                     </div>
 
                     <div id="image-meta-inputs"></div>
-                    <span asp-validation-for="Images"></span>
+                    <span asp-validation-for="Images" id="images-error" aria-live="polite"></span>
 
                 </div>
 
@@ -289,7 +287,41 @@
 
                 <div class="portal-form-group portal-form-group--full">
                     <button type="button" id="add-ticket-btn" class="portal-secondary-link">Ticket toevoegen</button>
+                    <datalist id="ticket-name-options">
+                        @foreach (var optie in Model.TicketTypeOptions)
+                        {
+                            <option value="@optie.Value">@optie.Text</option>
+                        }
+                        <option value="Entree"></option>
+                        <option value="Entree kinderen"></option>
+                        <option value="Entree volwassenen"></option>
+                        <option value="Entree studenten"></option>
+                    </datalist>
+                    <template id="ticket-row-template">
+                        <div class="portal-ticket-row">
+                            <div class="three-columns">
+                                <div class="portal-form-group">
+                                    <label for="Input_Tickets_0__TicketType">Ticketnaam *</label>
+                                    <input id="Input_Tickets_0__TicketType" name="Input.Tickets[0].TicketType" type="text" list="ticket-name-options" placeholder="Kies of typ een ticketnaam" maxlength="100" required data-msg-required="Vul een ticketnaam in of kies een suggestie." data-msg-maxlength="Gebruik maximaal 100 tekens voor de ticketnaam." />
+                                    <span data-valmsg-for="Input.Tickets[0].TicketType" data-valmsg-replace="true"></span>
+                                </div>
 
+                                <div class="portal-form-group">
+                                    <label for="Input_Tickets_0__Price">Prijs (€) *</label>
+                                    <input id="Input_Tickets_0__Price" name="Input.Tickets[0].Price" type="number" value="0" min="0" max="999999" step="0.01" required data-msg-required="Vul een prijs in." data-msg-number="Vul een geldige prijs in." data-msg-min="De prijs moet € 0 of hoger zijn." data-msg-max="De prijs mag maximaal € 999.999 zijn." data-msg-step="Gebruik maximaal twee decimalen." />
+                                    <span data-valmsg-for="Input.Tickets[0].Price" data-valmsg-replace="true"></span>
+                                </div>
+
+                                <div class="portal-form-group">
+                                    <label for="Input_Tickets_0__Quantity">Aantal beschikbaar *</label>
+                                    <input id="Input_Tickets_0__Quantity" name="Input.Tickets[0].Quantity" type="text" inputmode="numeric" required data-rule-digits="true" data-rule-range="[1,2147483647]" data-msg-required="Vul het aantal beschikbare tickets in." data-msg-digits="Vul een heel aantal van minimaal 1 in." data-msg-range="Vul een geldig aantal van minimaal 1 in." />
+                                    <span data-valmsg-for="Input.Tickets[0].Quantity" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                            <button type="button" class="portal-remove-ticket-btn">Verwijderen</button>
+                        </div>
+                    </template>
                     <div id="ticket-list" class="portal-ticket-list">
                         @if (Model.Input.Tickets != null && Model.Input.Tickets.Count > 0)
                             {
@@ -298,10 +330,8 @@
                                 <div class="portal-ticket-row">
                                     <div class="three-columns">
                                         <div class="portal-form-group">
-                                            <label asp-for="Input.Tickets[i].TicketType">Ticketsoort</label>
-                                            <select asp-for="Input.Tickets[i].TicketType" asp-items="Model.TicketTypeOptions">
-                                                <option value="">-- Kies een ticketsoort --</option>
-                                            </select>
+                                            <label asp-for="Input.Tickets[i].TicketType">Ticketnaam *</label>
+                                            <input asp-for="Input.Tickets[i].TicketType" type="text" list="ticket-name-options" placeholder="Kies of typ een ticketnaam" maxlength="100" required />
                                             <span asp-validation-for="Input.Tickets[i].TicketType"></span>
                                         </div>
 
@@ -311,11 +341,11 @@
                                             <span asp-validation-for="Input.Tickets[i].Price"></span>
                                         </div>
 
-                                        <div class="portal-form-group">
-                                            <label asp-for="Input.Tickets[i].Quantity">Aantal beschikbaar</label>
-                                            <input asp-for="Input.Tickets[i].Quantity" type="number" step="1" min="1" />
-                                            <span asp-validation-for="Input.Tickets[i].Quantity"></span>
-                                        </div>
+                                    <div class="portal-form-group">
+                                        <label asp-for="Input.Tickets[i].Quantity">Aantal beschikbaar *</label>
+                                        <input asp-for="Input.Tickets[i].Quantity" type="text" inputmode="numeric" data-rule-digits="true" data-msg-digits="Vul een heel aantal van minimaal 1 in." data-msg-number="Vul een heel aantal van minimaal 1 in." />
+                                        <span asp-validation-for="Input.Tickets[i].Quantity"></span>
+                                    </div>
                                     </div>
                                     <button type="button" class="portal-remove-ticket-btn">Verwijderen</button>
                                 </div>
@@ -427,7 +457,7 @@
 
                         <div class="portal-form-group">
                             <label asp-for="Input.ContactPhone"></label>
-                            <input asp-for="Input.ContactPhone" type="tel" placeholder="Bijvoorbeeld 06 12345678" />
+                            <input asp-for="Input.ContactPhone" type="tel" autocomplete="tel" maxlength="30" placeholder="Bijvoorbeeld 06 12345678" />
                             <span asp-validation-for="Input.ContactPhone"></span>
                         </div>
 
@@ -476,6 +506,60 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 
+    <script>
+        jQuery(function ($) {
+            const form = document.querySelector('form.portal-form');
+            if (!form) return;
+
+            const startDate = form.elements.namedItem('Input.StartDate');
+            const endDate = form.elements.namedItem('Input.EndDate');
+            const startTime = form.elements.namedItem('Input.StartTime');
+            const endTime = form.elements.namedItem('Input.EndTime');
+            const today = startDate.min;
+            if (!$(form).data('validator')) {
+                $.validator.unobtrusive.parse(form);
+            }
+
+            const validator = $(form).data('validator');
+            if (!validator) return;
+
+            $.validator.addMethod('latereindtijd', function (value) {
+                if (!value || !startTime.value || !startDate.value || !endDate.value) return true;
+                if (startDate.value !== endDate.value) return true;
+
+                return endTime.valueAsNumber > startTime.valueAsNumber;
+            }, 'Kies een eindtijd die later is dan de starttijd.');
+
+            $(endTime).rules('add', { latereindtijd: true });
+
+            function updateDates() {
+                endDate.min = startDate.value > today ? startDate.value : today;
+
+                if (endDate.value) validator.element(endDate);
+                if (endTime.value) validator.element(endTime);
+            }
+
+            for (const field of [startDate, endDate]) {
+                field.addEventListener('input', () => {
+                    const year = field.value.split('-')[0];
+
+                    if (year.length > 4) {
+                        field.value = '';
+                        validator.showErrors({
+                            [field.name]: 'Gebruik een jaartal van maximaal 4 cijfers.'
+                        });
+                    }
+                });
+            }
+
+            for (const field of [startDate, endDate, startTime, endTime]) {
+                field.addEventListener('change', updateDates);
+            }
+
+            updateDates();
+        });
+    </script>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
             crossorigin=""></script>
@@ -486,76 +570,46 @@
 
     <script>
         (() => {
-            const ticketList = document.getElementById('ticket-list');
-            const addTicketBtn = document.getElementById('add-ticket-btn');
+            const addButton = document.getElementById('add-ticket-btn');
+            const list = document.getElementById('ticket-list');
+            const template = document.getElementById('ticket-row-template');
 
-            function getTicketCount() {
-                return ticketList.querySelectorAll('.portal-ticket-row').length;
-            }
-
-            function createTicketRow(index) {
-                const row = document.createElement('div');
-                row.className = 'portal-ticket-row';
-
-                row.innerHTML = `
-                    <div class="three-columns">
-                        <div class="portal-form-group">
-                            <label for="Input_Tickets_${index}__TicketType">Ticketsoort*</label>
-                            <select id="Input_Tickets_${index}__TicketType" name="Input.Tickets[${index}].TicketType">
-                                <option value="">-- Kies een ticketsoort --</option>
-                                <option value="Sta-Ticket">Sta-Ticket</option>
-                                <option value="Zit-Ticket">Zit-Ticket</option>
-                                <option value="Invalide-Ticket">Invalide-Ticket</option>
-                                <option value="VIP-Ticket">VIP-Ticket</option>
-                            </select>
-                        </div>
-                        <div class="portal-form-group">
-                            <label for="Input_Tickets_${index}__Price">Prijs (€)*</label>
-                            <input id="Input_Tickets_${index}__Price" name="Input.Tickets[${index}].Price" type="number" step="0.01" min="0" value="0" />
-                        </div>
-                        <div class="portal-form-group">
-                            <label for="Input_Tickets_${index}__Quantity">Aantal beschikbaar*</label>
-                            <input id="Input_Tickets_${index}__Quantity" name="Input.Tickets[${index}].Quantity" type="number" step="1" min="1" value="1" />
-                        </div>
-                    </div>
-                    <button type="button" class="portal-remove-ticket-btn">Verwijderen</button>
-                `;
-
-                return row;
-            }
+            if (!addButton || !list || !template) return;
 
             function reindexTickets() {
-                ticketList.querySelectorAll('.portal-ticket-row').forEach((row, index) => {
-                    ['TicketType', 'Price', 'Quantity'].forEach(field => {
-                        const input = row.querySelector(`input[name$=".${field}"]`);
+                list.querySelectorAll('.portal-ticket-row').forEach((row, index) => {
+                    for (const field of ['TicketType', 'Price', 'Quantity']) {
+                        const input = row.querySelector(`[name$=".${field}"]`);
                         const label = row.querySelector(`label[for$="__${field}"]`);
-                        if (input) {
-                            input.id = `Input_Tickets_${index}__${field}`;
-                            input.name = `Input.Tickets[${index}].${field}`;
-                        }
-                        if (label) label.setAttribute('for', `Input_Tickets_${index}__${field}`);
-                    });
+                        const message = row.querySelector(`[data-valmsg-for$=".${field}"]`);
+
+                        if (!input) continue;
+
+                        input.name = `Input.Tickets[${index}].${field}`;
+                        input.id = `Input_Tickets_${index}__${field}`;
+
+                        if (label) label.htmlFor = input.id;
+                        if (message) message.setAttribute('data-valmsg-for', input.name);
+                    }
                 });
             }
 
-            if (addTicketBtn && ticketList) {
-                addTicketBtn.addEventListener('click', () => {
-                    const index = getTicketCount();
-                    ticketList.appendChild(createTicketRow(index));
-                });
+            addButton.addEventListener('click', () => {
+                list.appendChild(template.content.cloneNode(true));
+                reindexTickets();
+                list.lastElementChild.querySelector('input[name$=".TicketType"]')?.focus();
+            });
 
-                ticketList.addEventListener('click', (event) => {
-                    const removeBtn = event.target.closest('.portal-remove-ticket-btn');
-                    if (!removeBtn) return;
+            list.addEventListener('click', event => {
+                const removeButton = event.target.closest('.portal-remove-ticket-btn');
+                if (!removeButton) return;
 
-                    const row = removeBtn.closest('.portal-ticket-row');
-                    if (!row) return;
-
-                    row.remove();
-                    reindexTickets();
-                });
-            }
+                removeButton.closest('.portal-ticket-row')?.remove();
+                reindexTickets();
+            });
         })();
+    </script>
+    <script>
 
         (() => {
             function setupTagInput(config) {
@@ -710,4 +764,40 @@
             updateFiles();
         })();
     </script>
+    <script>
+        jQuery(function ($) {
+            const form = document.getElementById('create-event-form');
+            if (!form) return;
+
+            if (!$(form).data('validator')) {
+                $.validator.unobtrusive.parse(form);
+            }
+
+            const validator = $(form).data('validator');
+            if (!validator) return;
+
+            const fields = 'input[name]:not([type="hidden"]):not([type="file"]), select[name], textarea[name]';
+
+            function validateField(field) {
+                if (field.disabled || !$(field).is(':visible')) return;
+
+                const invalid = validator.element(field) === false;
+                field.classList.toggle('input-validation-error', invalid);
+                field.setAttribute('aria-invalid', String(invalid));
+            }
+
+            // Controleer ingevulde tekst en keuzes direct tijdens het invoeren.
+            $(form).on('input change', fields, function () {
+                if (this.value !== '' || this.classList.contains('input-validation-error')) {
+                    validateField(this);
+                }
+            });
+
+            // Toon ook de melding voor een leeg verplicht veld wanneer je het verlaat.
+            $(form).on('focusout', fields, function () {
+                validateField(this);
+            });
+        });
+    </script>
+    <script src="~/js/event-form-submit.js" asp-append-version="true"></script>
 }
