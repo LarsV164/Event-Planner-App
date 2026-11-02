@@ -56,8 +56,7 @@ namespace EventApp.Web.Pages
 
             var allEvents = await _eventRepository.GetAllEventsAsync();
 
-            // Bouw de opties op uit alle evenementen.
-            // Zo verdwijnen opties niet wanneer je een filter toepast.
+            // Yoink de dingen uit dbo.events om opties te bouwen
             AllCategories = allEvents
                 .SelectMany(e => e.Categories)
                 .Where(c => !string.IsNullOrWhiteSpace(c))
@@ -65,6 +64,9 @@ namespace EventApp.Web.Pages
                 .OrderBy(c => c)
                 .ToList();
 
+            // Bouw de toegankelijkheidsopties op uit alle evenementen.
+            // Zo zijn de filters gebaseerd op de toegankelijkheidsvelden van dbo.events
+            // en verdwijnen opties niet wanneer je een filter toepast.
             AllAccessibility = allEvents
                 .SelectMany(e => e.AccessibilityOptions)
                 .Where(option => !string.IsNullOrWhiteSpace(option))

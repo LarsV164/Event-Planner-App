@@ -401,6 +401,22 @@
                     <span asp-validation-for="Input.WheelchairAccessibleToilet"></span>
                 </div>
 
+                <div class="portal-form-group portal-form-group--full">
+                    <h2>Categorieën</h2>
+                    <div class="EventApp-boolean-group">
+                        @foreach (var category in Model.AvailableCategories)
+                        {
+                            <label class="EventApp-checkbox">
+                                <input type="checkbox"
+                                       name="Input.CategoryIds"
+                                       value="@category.CategoryId"
+                                       checked="@(Model.Input.CategoryIds.Contains(category.CategoryId))" />
+                                <span>@category.CategoryName</span>
+                            </label>
+                        }
+                    </div>
+                </div>
+
                 <!-- OUDE CATEGORIE 
 
                 <div class="portal-form-group portal-form-group--full">

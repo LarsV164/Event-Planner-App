@@ -17,5 +17,7 @@ namespace EventApp.Web.Repositories
         // Geeft specifieke events terug op basis van een lijst van event ID's.
         // Gebruikt door de bookmarks API om alleen de opgeslagen events op te halen.
         Task<List<EventCard>> GetEventsByIdsAsync(IEnumerable<int> ids);
+
+        Task<List<string>> GetDistinctAccessibilityOptionsAsync();
     }
 }

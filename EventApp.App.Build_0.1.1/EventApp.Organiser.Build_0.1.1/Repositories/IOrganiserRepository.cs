@@ -8,6 +8,7 @@ namespace EventApp.OrganiserPortal.Repositories
         Task<List<OrganiserEventListItemModel>> GetEventsByOrganiserIdAsync(int organiserId);
 
         Task<int> GetNextEventIdAsync();
+        Task<List<(int CategoryId, string CategoryName)>> GetAllCategoriesAsync();
         Task CreateEventAsync(int organiserId, int eventId, CreateEventInputModel input);
         Task AddEventImagesAsync(int eventId, List<string> imageUrls);
         Task<CreateEventInputModel?> GetEventForEditAsync(int organiserId, int eventId);

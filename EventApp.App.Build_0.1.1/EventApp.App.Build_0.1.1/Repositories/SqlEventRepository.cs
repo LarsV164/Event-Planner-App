@@ -17,14 +17,10 @@ namespace EventApp.Web.Repositories
         {
             var events = new List<EventCard>();
 
-            // Haal evenementen, datumperiodes en toegankelijkheidsopties op.
+            // Haal evenementen en datumperiodes op.
             var sql = EventQueries.GetAllEvents + @"
-
 SELECT event_id, start_date, end_date
-FROM dbo.event_dates;
-
-SELECT event_id, description
-FROM dbo.event_accessibility_options;";
+FROM dbo.event_dates;";
 
             await using var connection =
                 new SqlConnection(_connectionString);
@@ -46,6 +42,11 @@ FROM dbo.event_accessibility_options;";
                 var categories =
                     reader["categories"]?.ToString()?.Split(", ").ToList()
                     ?? new List<string>();
+
+                var accessibilityOptions = BuildAccessibilityOptions(
+                    reader["disabled_parking_available"],
+                    reader["disabled_toilet_available"],
+                    reader["wheelchair_accessible_toilet"]);
 
                 var eventCard = new EventCard
                 {
@@ -73,11 +74,10 @@ FROM dbo.event_accessibility_options;";
 
                     Categories = categories,
 
-                    AccessibilityText =
-                        reader["accessibility_text"] == DBNull.Value
-                            ? string.Empty
-                            : reader["accessibility_text"]?.ToString()
-                                ?? string.Empty
+                    AccessibilityOptions = accessibilityOptions,
+
+                    AccessibilityText = string.Join(
+                        ", ", accessibilityOptions)
                 };
 
                 events.Add(eventCard);
@@ -99,25 +99,6 @@ FROM dbo.event_accessibility_options;";
                     DateTime endDate = reader.GetDateTime(2);
 
                     eventCard.Dates.Add((startDate, endDate));
-                }
-            }
-
-            // Derde resultaat: de toegankelijkheidsopties.
-            await reader.NextResultAsync();
-
-            while (await reader.ReadAsync())
-            {
-                int eventId = reader.GetInt32(0);
-
-                if (!reader.IsDBNull(1) &&
-                    eventsById.TryGetValue(eventId, out var eventCard))
-                {
-                    string option = reader.GetString(1).Trim();
-
-                    if (!string.IsNullOrWhiteSpace(option))
-                    {
-                        eventCard.AccessibilityOptions.Add(option);
-                    }
                 }
             }
 
@@ -171,6 +152,11 @@ FROM dbo.event_accessibility_options;";
                     reader["categories"]?.ToString()?.Split(", ").ToList()
                     ?? new List<string>();
 
+                var accessibilityOptions = BuildAccessibilityOptions(
+                    reader["disabled_parking_available"],
+                    reader["disabled_toilet_available"],
+                    reader["wheelchair_accessible_toilet"]);
+
                 var eventCard = new EventCard
                 {
                     EventId = reader.GetInt32(
@@ -197,17 +183,54 @@ FROM dbo.event_accessibility_options;";
 
                     Categories = categories,
 
-                    AccessibilityText =
-                        reader["accessibility_text"] == DBNull.Value
-                            ? string.Empty
-                            : reader["accessibility_text"]?.ToString()
-                                ?? string.Empty
+                    AccessibilityOptions = accessibilityOptions,
+
+                    AccessibilityText = string.Join(
+                        ", ", accessibilityOptions)
                 };
 
                 events.Add(eventCard);
             }
 
             return events;
+        }
+
+        public async Task<List<string>> GetDistinctAccessibilityOptionsAsync()
+        {
+            var events = await GetAllEventsAsync();
+
+            return events
+                .SelectMany(e => e.AccessibilityOptions)
+                .Where(option => !string.IsNullOrWhiteSpace(option))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(option => option)
+                .ToList();
+        }
+
+        // Zet de toegankelijkheidsvelden van dbo.events om naar filteropties.
+        private static List<string> BuildAccessibilityOptions(
+            object disabledParkingValue,
+            object disabledToiletValue,
+            object wheelchairValue)
+        {
+            var options = new List<string>();
+
+            if (disabledParkingValue is bool parking && parking)
+            {
+                options.Add("Invalidenparkeerplaats aanwezig");
+            }
+
+            if (disabledToiletValue is bool toilet && toilet)
+            {
+                options.Add("Invalidentoilet aanwezig");
+            }
+
+            if (wheelchairValue is bool wheelchair && wheelchair)
+            {
+                options.Add("Rolstoeltoegankelijk toilet");
+            }
+
+            return options;
         }
 
         // Bestaande voorbeeldlogica voor beoordelingen.

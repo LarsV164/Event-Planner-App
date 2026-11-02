@@ -87,6 +87,24 @@ namespace EventApp.OrganiserPortal.Repositories
             return results;
         }
 
+        public async Task<List<(int CategoryId, string CategoryName)>> GetAllCategoriesAsync()
+        {
+            var result = new List<(int, string)>();
+
+            await using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            await using var command = new SqlCommand("SELECT category_id, category_name FROM dbo.event_categories ORDER BY category_name;", connection);
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                result.Add((reader.GetInt32(0), reader.IsDBNull(1) ? string.Empty : reader.GetString(1)));
+            }
+
+            return result;
+        }
+
         public async Task<int> GetNextEventIdAsync()
         {
             await using var connection = new SqlConnection(_connectionString);
@@ -420,6 +438,9 @@ namespace EventApp.OrganiserPortal.Repositories
             command.Parameters.AddWithValue("@Description", string.IsNullOrWhiteSpace(input.Description) ? DBNull.Value : input.Description);
             command.Parameters.AddWithValue("@OrganiserId", organiserId);
             command.Parameters.AddWithValue("@ChildrenFriendly", (object?)input.ChildrenFriendly ?? DBNull.Value);
+            command.Parameters.AddWithValue("@CategoryIds", input.CategoryIds != null && input.CategoryIds.Count > 0
+                ? string.Join(",", input.CategoryIds)
+                : (object)DBNull.Value);
             await command.ExecuteNonQueryAsync();
         }
 

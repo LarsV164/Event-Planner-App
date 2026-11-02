@@ -10,7 +10,11 @@ SELECT
     COALESCE(img.image_url, '/images/events/placeholder.jpg') AS image_url,
     COALESCE(price.min_price, CAST(0 AS DECIMAL(10,2))) AS min_price,
     COALESCE(cat.categories, '') AS categories,
-    COALESCE(acc.accessibility_text, '') AS accessibility_text
+    e.has_standing_places,
+    e.has_sitting_places,
+    e.disabled_parking_available,
+    e.disabled_toilet_available,
+    e.wheelchair_accessible_toilet
 FROM dbo.events e
 OUTER APPLY
 (
@@ -36,12 +40,6 @@ OUTER APPLY
     ON ec.category_id = eec.category_id
     WHERE eec.event_id = e.event_id
 ) cat
-OUTER APPLY
-(
-    SELECT STRING_AGG(eao.description, ', ') AS accessibility_text
-    FROM dbo.event_accessibility_options eao
-    WHERE eao.event_id = e.event_id
-) acc
 WHERE ISNULL(e.canceled, 0) = 0
 ORDER BY e.event_name;";
 
@@ -56,7 +54,11 @@ SELECT
     COALESCE(img.image_url, '/images/events/placeholder.jpg') AS image_url,
     COALESCE(price.min_price, CAST(0 AS DECIMAL(10,2))) AS min_price,
     COALESCE(cat.categories, '') AS categories,
-    COALESCE(acc.accessibility_text, '') AS accessibility_text
+    e.has_standing_places,
+    e.has_sitting_places,
+    e.disabled_parking_available,
+    e.disabled_toilet_available,
+    e.wheelchair_accessible_toilet
 FROM dbo.events e
 OUTER APPLY
 (
@@ -82,14 +84,19 @@ OUTER APPLY
     ON ec.category_id = eec.category_id
     WHERE eec.event_id = e.event_id
 ) cat
-OUTER APPLY
-(
-    SELECT STRING_AGG(eao.description, ', ') AS accessibility_text
-    FROM dbo.event_accessibility_options eao
-    WHERE eao.event_id = e.event_id
-) acc
 WHERE e.event_id IN ({parameterList})
   AND ISNULL(e.canceled, 0) = 0
 ORDER BY e.event_name;";
+
+        public const string GetDistinctAccessibilityOptions = @"
+SELECT N'Invalidenparkeerplaats aanwezig' AS description
+WHERE EXISTS (SELECT 1 FROM dbo.events e WHERE ISNULL(e.canceled,0)=0 AND e.disabled_parking_available = 1)
+UNION
+SELECT N'Invalidentoilet aanwezig'
+WHERE EXISTS (SELECT 1 FROM dbo.events e WHERE ISNULL(e.canceled,0)=0 AND e.disabled_toilet_available = 1)
+UNION
+SELECT N'Rolstoeltoegankelijk toilet'
+WHERE EXISTS (SELECT 1 FROM dbo.events e WHERE ISNULL(e.canceled,0)=0 AND e.wheelchair_accessible_toilet = 1)
+ORDER BY description;";
     }
 }

@@ -127,6 +127,7 @@ INSERT INTO dbo.events (
     description,
     organiser_id,
     children_friendly,
+    category_ids,
     canceled
 )
 VALUES (
@@ -142,6 +143,7 @@ VALUES (
     @Description,
     @OrganiserId,
     @ChildrenFriendly,
+    @CategoryIds,
     0
 );";
 

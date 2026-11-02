@@ -55,6 +55,7 @@ namespace EventApp.OrganiserPortal.Pages.Portal
         public List<IFormFile> Attachments { get; set; } = new();
 
         public List<SelectListItem> TicketTypeOptions { get; set; } = new();
+        public List<(int CategoryId, string CategoryName)> AvailableCategories { get; set; } = new();
 
         private void LoadTicketTypes()
         {
@@ -67,9 +68,10 @@ namespace EventApp.OrganiserPortal.Pages.Portal
             };
         }
 
-        public void OnGet()
+        public async Task OnGetAsync()
         {
             LoadTicketTypes();
+            AvailableCategories = await _organiserRepository.GetAllCategoriesAsync();
         }
 
         private bool IsBackgroundSave =>
@@ -93,6 +95,7 @@ namespace EventApp.OrganiserPortal.Pages.Portal
         public async Task<IActionResult> OnPostAsync()
         {
             LoadTicketTypes();
+            AvailableCategories = await _organiserRepository.GetAllCategoriesAsync();
 
             if (Input.Tickets == null)
             {

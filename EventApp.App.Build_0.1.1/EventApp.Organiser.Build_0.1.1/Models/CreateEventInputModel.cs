@@ -54,6 +54,7 @@ namespace EventApp.OrganiserPortal.Models
 
         public List<CreateTicketInputModel> Tickets { get; set; } = new();
         public List<string> Categories { get; set; } = new();
+        public List<int> CategoryIds { get; set; } = new();
         public List<string> AccessibilityOptions { get; set; } = new();
         public List<ImageCropPositionInputModel> ImageCropPositions { get; set; } = new();
 
