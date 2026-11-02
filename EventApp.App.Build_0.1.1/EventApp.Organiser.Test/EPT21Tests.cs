@@ -1,17 +1,18 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
-using EventApp.OrganiserPortal.Pages.Portal;
+﻿using EventApp.OrganiserPortal.Pages.Portal;
 using EventApp.OrganiserPortal.Repositories;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Moq;
+using System;
+using System.IO;
+using System.Linq;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace EventApp.OrganiserPortal.Tests
@@ -27,6 +28,7 @@ namespace EventApp.OrganiserPortal.Tests
 
             var environmentMock = new Mock<IWebHostEnvironment>();
             var configurationMock = new Mock<IConfiguration>();
+            var loggerMock = new Mock<ILogger<CreateModel>>();
 
             // De paginacode maakt vóór de bestandscontrole een map aan.
             // Gebruik daarvoor een unieke tijdelijke testmap.
@@ -43,7 +45,8 @@ namespace EventApp.OrganiserPortal.Tests
                 var pagina = new CreateModel(
                     repositoryMock.Object,
                     environmentMock.Object,
-                    configurationMock.Object);
+                    configurationMock.Object,
+                    loggerMock.Object);
 
                 // Simuleer een ingelogde organisator.
                 var gebruiker = new ClaimsPrincipal(

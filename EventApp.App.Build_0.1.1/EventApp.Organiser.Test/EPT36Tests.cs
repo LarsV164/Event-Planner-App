@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using EventApp.OrganiserPortal.Models;
+﻿using EventApp.OrganiserPortal.Models;
 using EventApp.OrganiserPortal.Pages.Portal;
 using EventApp.OrganiserPortal.Repositories;
 using FluentAssertions;
@@ -12,7 +7,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Moq;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace EventApp.OrganiserPortal.Tests
@@ -28,6 +29,7 @@ namespace EventApp.OrganiserPortal.Tests
 
             var environmentMock = new Mock<IWebHostEnvironment>();
             var configurationMock = new Mock<IConfiguration>();
+            var loggerMock = new Mock<ILogger<CreateModel>>();
 
             var testMap = Path.Combine(
                 Path.GetTempPath(),
@@ -74,7 +76,8 @@ namespace EventApp.OrganiserPortal.Tests
                 var pagina = new CreateModel(
                     repositoryMock.Object,
                     environmentMock.Object,
-                    configurationMock.Object);
+                    configurationMock.Object,
+                    loggerMock.Object);
 
                 var gebruiker = new ClaimsPrincipal(
                     new ClaimsIdentity(
