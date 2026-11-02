@@ -113,6 +113,7 @@ namespace EventApp.OrganiserPortal.Repositories
                 await InsertTicketsAsync(connection, transaction, eventId, input);
                 await InsertAccessibilityOptionsAsync(connection, transaction, eventId, input);
                 await InsertCategoriesAsync(connection, transaction, eventId, input);
+                await SaveEventExtrasAsync(connection, transaction, eventId, organiserId, input);
 
                 await transaction.CommitAsync();
             }
@@ -420,6 +421,54 @@ namespace EventApp.OrganiserPortal.Repositories
             command.Parameters.AddWithValue("@OrganiserId", organiserId);
             command.Parameters.AddWithValue("@ChildrenFriendly", (object?)input.ChildrenFriendly ?? DBNull.Value);
             await command.ExecuteNonQueryAsync();
+        }
+
+        private static async Task SaveEventExtrasAsync(
+            SqlConnection connection,
+            SqlTransaction transaction,
+            int eventId,
+            int organiserId,
+            CreateEventInputModel input)
+        {
+            await using (var command = new SqlCommand(
+                OrganiserQueries.UpdateEventExtras, connection, transaction))
+            {
+                command.Parameters.Add("@EventId", SqlDbType.Int).Value = eventId;
+                command.Parameters.Add("@OrganiserId", SqlDbType.Int).Value = organiserId;
+
+                command.Parameters.Add("@ContactPhone", SqlDbType.NVarChar, 30).Value =
+                    string.IsNullOrWhiteSpace(input.ContactPhone)
+                        ? DBNull.Value
+                        : input.ContactPhone.Trim();
+
+                command.Parameters.Add("@ContactEmail", SqlDbType.NVarChar, 254).Value =
+                    string.IsNullOrWhiteSpace(input.ContactEmail)
+                        ? DBNull.Value
+                        : input.ContactEmail.Trim();
+
+                command.Parameters.Add("@WebsiteUrl", SqlDbType.NVarChar, 2048).Value =
+                    string.IsNullOrWhiteSpace(input.WebsiteUrl)
+                        ? DBNull.Value
+                        : input.WebsiteUrl.Trim();
+
+                await command.ExecuteNonQueryAsync();
+            }
+
+            foreach (var attachment in input.AttachmentsToSave)
+            {
+                await using var command = new SqlCommand(
+                    OrganiserQueries.InsertEventAttachment, connection, transaction);
+
+                command.Parameters.Add("@EventId", SqlDbType.Int).Value = eventId;
+                command.Parameters.Add("@FileName", SqlDbType.NVarChar, 255).Value =
+                    attachment.FileName;
+                command.Parameters.Add("@ContentType", SqlDbType.NVarChar, 255).Value =
+                    attachment.ContentType;
+                command.Parameters.Add("@FileContent", SqlDbType.VarBinary, -1).Value =
+                    attachment.FileContent;
+
+                await command.ExecuteNonQueryAsync();
+            }
         }
 
         private static async Task InsertEventDatesAsync(

@@ -12,6 +12,37 @@
 
     if (!input || !addBtn) return;
 
+    const imageError = document.getElementById('images-error');
+
+    function validateSelectedImages() {
+        if (!imageError) return;
+
+        const files = Array.from(input.files);
+        let message = '';
+
+        if (files.length === 0) {
+            message = 'Upload minimaal één afbeelding.';
+        } else {
+            const invalidFile = files.find(file =>
+                file.size === 0 ||
+                file.size > 5 * 1024 * 1024 ||
+                !/\.(jpg|jpeg|png|webp)$/i.test(file.name)
+            );
+
+            if (invalidFile) {
+                message = `Controleer '${invalidFile.name}'. Kies een niet-lege JPG-, JPEG-, PNG- of WEBP-afbeelding van maximaal 5 MB.`;
+            }
+        }
+
+        const invalid = message !== '';
+        imageError.textContent = message;
+        imageError.classList.toggle('field-validation-error', invalid);
+        imageError.classList.toggle('field-validation-valid', !invalid);
+        addBtn.setAttribute('aria-invalid', String(invalid));
+    }
+
+    input.form.addEventListener('submit', validateSelectedImages, true);
+    input.form.addEventListener('invalid', validateSelectedImages, true);
     addBtn.addEventListener('click', () => input.click());
 
 
@@ -21,6 +52,7 @@
         const dt = new DataTransfer();
         items.forEach(i => dt.items.add(i.file));
         input.files = dt.files;
+        validateSelectedImages();
 
         meta.innerHTML = items.map((i, n) =>
             `<input type="hidden" name="Input.ImageCropPositions[${n}].X" value="${i.x}" />

@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace EventApp.OrganiserPortal.Models
 {
@@ -16,6 +18,7 @@ namespace EventApp.OrganiserPortal.Models
     public class CreateEventInputModel
     {
         [Required(ErrorMessage = "Naam van het evenement is verplicht.")]
+        [StringLength(100, ErrorMessage = "Gebruik maximaal 100 tekens voor de evenementnaam.")]
         public string EventName { get; set; } = string.Empty;
 
         [RegularExpression("Binnen|Buiten|Beide", ErrorMessage = "Kies Binnen, Buiten of Beide.")]
@@ -55,44 +58,63 @@ namespace EventApp.OrganiserPortal.Models
         public List<ImageCropPositionInputModel> ImageCropPositions { get; set; } = new();
 
         //NIEUWE DINGEN TOEGEVOED
-        [Required, Display(Name = "Straat")]
+        [Display(Name = "Straat*")]
+        [Required(ErrorMessage = "Straatnaam is verplicht.")]
+        [RegularExpression(@"^[^0-9]+$", ErrorMessage = "Vul een straatnaam zonder cijfers in. Zet het huisnummer in het aparte veld.")]
         public string Street { get; set; } = "";
 
+        //[Required(ErrorMessage = "Huisnummer is verplicht")]
         [Display(Name = "Huisnummer")]
-        [Range(1, int.MaxValue, ErrorMessage = "Voer een geldig huisnummer in")]
-        public int? HouseNumber { get; set; }
+        [Range(1, int.MaxValue, ErrorMessage = "Vul een heel huisnummer van 1 of hoger in.")] public int? HouseNumber { get; set; }
 
         [Display(Name = "Toevoeging")]
         public string? HouseNumberAddition { get; set; }
 
-        [Required, Display(Name = "Postcode")]
+        [Display(Name = "Postcode*")]
+        [Required(ErrorMessage = "Postcode is verplicht.")]
         [RegularExpression(@"^[1-9][0-9]{3}\s?[A-Za-z]{2}$", ErrorMessage = "Ongeldige postcode")]
         public string PostalCode { get; set; } = "";
 
-        [Required, Display(Name = "Plaats")]
+        [Display(Name = "Plaats*")]
+        [Required(ErrorMessage = "Plaats is verplicht.")]
+        [RegularExpression(@"^[^0-9]+$", ErrorMessage = "Vul een plaatsnaam zonder cijfers in.")]
         public string City { get; set; } = "";
 
+        [Display(Name = "Startdatum*")]
         [Required(ErrorMessage = "Startdatum is verplicht.")]
-        [Display(Name = "Startdatum")]
         public DateTime? StartDate { get; set; }
 
+        [Display(Name = "Starttijd*")]
         [Required(ErrorMessage = "Starttijd is verplicht.")]
-        [Display(Name = "Starttijd")]
         public TimeSpan? StartTime { get; set; }
 
+        [Display(Name = "Einddatum*")]
         [Required(ErrorMessage = "Einddatum is verplicht.")]
-        [Display(Name = "Einddatum")]
         public DateTime? EndDate { get; set; }
 
+        [Display(Name = "Eindtijd*")]
         [Required(ErrorMessage = "Eindtijd is verplicht.")]
-        [Display(Name = "Eindtijd")]
         public TimeSpan? EndTime { get; set; }
 
+        [Display(Name = "Geschikt voor kinderen*")]
         [Required(ErrorMessage = "Geef aan of het geschikt is voor kinderen")]
-        [Display(Name = "Geschikt voor kinderen")]
         public bool? ChildrenFriendly { get; set; }
 
-        // enum voor eventstatus
-        public evenStatus EventStatus { get; set; } 
+        [Display(Name = "Telefoonnummer")]
+        [RegularExpression(@"^\+?[0-9](?: ?[0-9]){6,14}$", ErrorMessage = "Vul 7 tot 15 cijfers in. Spaties en een + aan het begin zijn toegestaan.")]
+        public string? ContactPhone { get; set; }
+
+        [Display(Name = "E-mailadres")]
+        [EmailAddress(ErrorMessage = "Vul een geldig e-mailadres in.")]
+        [StringLength(254, ErrorMessage = "Gebruik maximaal 254 tekens voor het e-mailadres.")]
+        public string? ContactEmail { get; set; }
+
+        [Display(Name = "Website")]
+        [Url(ErrorMessage = "Vul een geldig websiteadres in, bijvoorbeeld https://www.voorbeeld.nl.")]
+        [StringLength(2048, ErrorMessage = "Gebruik maximaal 2048 tekens voor het websiteadres.")]
+        public string? WebsiteUrl { get; set; }
+        [BindNever]
+        [ValidateNever]
+        public List<EventAttachmentInputModel> AttachmentsToSave { get; set; } = new();
     }
 }

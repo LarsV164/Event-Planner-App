@@ -13,6 +13,20 @@ namespace EventApp.OrganiserPortal.Pages.Portal
     {
         private static readonly string[] AllowedImageExtensions = [".jpg", ".jpeg", ".png", ".webp"];
         private const long MaxImageSizeBytes = 5 * 1024 * 1024;
+        private const int MaxAttachmentCount = 5;
+        private const long MaxAttachmentSizeBytes = 5 * 1024 * 1024;
+
+        private static readonly Dictionary<string, string> AllowedAttachmentTypes = new()
+        {
+            [".pdf"] = "application/pdf",
+            [".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            [".xlsx"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            [".txt"] = "text/plain",
+            [".jpg"] = "image/jpeg",
+            [".jpeg"] = "image/jpeg",
+            [".png"] = "image/png",
+            [".webp"] = "image/webp"
+        };
 
         private readonly IOrganiserRepository _organiserRepository;
         private readonly IWebHostEnvironment _environment;
@@ -37,6 +51,9 @@ namespace EventApp.OrganiserPortal.Pages.Portal
         [BindProperty]
         public List<IFormFile> Images { get; set; } = new();
 
+        [BindProperty]
+        public List<IFormFile> Attachments { get; set; } = new();
+
         public List<SelectListItem> TicketTypeOptions { get; set; } = new();
 
         private void LoadTicketTypes()
@@ -53,6 +70,24 @@ namespace EventApp.OrganiserPortal.Pages.Portal
         public void OnGet()
         {
             LoadTicketTypes();
+        }
+
+        private bool IsBackgroundSave =>
+        HttpContext?.Request.Headers["X-Event-Form"].ToString() == "1";
+
+        private IActionResult ShowFormErrors(int statusCode = 422)
+        {
+            if (!IsBackgroundSave)
+            {
+                return Page();
+            }
+
+            var details = new ValidationProblemDetails(ModelState)
+            {
+                Status = statusCode
+            };
+
+            return new JsonResult(details) { StatusCode = statusCode };
         }
 
         public async Task<IActionResult> OnPostAsync()
@@ -79,22 +114,92 @@ namespace EventApp.OrganiserPortal.Pages.Portal
 
             if (!Images.Any())
             {
-                ModelState.AddModelError(string.Empty, "Upload minimaal één afbeelding.");
+                ModelState.AddModelError(nameof(Images), "Upload minimaal één afbeelding.");
             }
 
             // House number only required when NOT in map/no-address mode
-            if (Input.NoAddressMode == true)
+            const string houseNumberKey = "Input.HouseNumber";
+
+            if (Input.NoAddressMode)
             {
-                ModelState.Remove(nameof(Input.HouseNumber));
+                ModelState.Remove(houseNumberKey);
             }
-            else if (Input.HouseNumber == null)
+            else if (Input.HouseNumber is null &&
+                     ModelState.TryGetValue(houseNumberKey, out var houseNumberState) &&
+                     houseNumberState.Errors.Count > 0 &&
+                     !string.IsNullOrWhiteSpace(houseNumberState.AttemptedValue))
             {
-                ModelState.AddModelError(nameof(Input.HouseNumber), "Huisnummer is verplicht");
+                houseNumberState.Errors.Clear();
+                ModelState.AddModelError(houseNumberKey, "Vul een heel huisnummer van 1 of hoger in, bijvoorbeeld 12.");
+            }
+            if (Attachments.Count > MaxAttachmentCount)
+            {
+                ModelState.AddModelError(nameof(Attachments),
+                    "Voeg maximaal 5 bijlagen toe.");
+            }
+
+            foreach (var attachment in Attachments)
+            {
+                var fileName = Path.GetFileName(attachment.FileName.Replace('\\', '/'));
+                var extension = Path.GetExtension(fileName).ToLowerInvariant();
+
+                if (string.IsNullOrWhiteSpace(fileName) || fileName.Length > 255)
+                {
+                    ModelState.AddModelError(nameof(Attachments),
+                        "Gebruik een bestandsnaam van maximaal 255 tekens.");
+                }
+
+                if (attachment.Length <= 0)
+                {
+                    ModelState.AddModelError(nameof(Attachments),
+                        $"Bijlage '{fileName}' is leeg.");
+                }
+                else if (attachment.Length > MaxAttachmentSizeBytes)
+                {
+                    ModelState.AddModelError(nameof(Attachments),
+                        $"Bijlage '{fileName}' is groter dan 5 MB.");
+                }
+
+                if (!AllowedAttachmentTypes.ContainsKey(extension))
+                {
+                    ModelState.AddModelError(nameof(Attachments),
+                        "Gebruik voor bijlagen PDF, DOCX, XLSX, TXT, JPG, JPEG, PNG of WEBP.");
+                }
+            }
+
+            DateTime vandaag = DateTime.Today;
+
+            if (Input.StartDate is DateTime startdatum && startdatum.Date < vandaag)
+            {
+                ModelState.AddModelError("Input.StartDate", "Kies vandaag of een latere startdatum.");
+            }
+
+            if (Input.EndDate is DateTime einddatum && einddatum.Date < vandaag)
+            {
+                ModelState.AddModelError("Input.EndDate", "Kies vandaag of een latere einddatum.");
+            }
+
+            if (Input.StartDate.HasValue && Input.EndDate.HasValue)
+            {
+                DateTime start = Input.StartDate.Value.Date;
+                DateTime einde = Input.EndDate.Value.Date;
+
+                if (einde >= vandaag && einde < start)
+                {
+                    ModelState.AddModelError("Input.EndDate", "De einddatum mag niet vóór de startdatum liggen.");
+                }
+                else if (einde == start &&
+                         Input.StartTime.HasValue &&
+                         Input.EndTime.HasValue &&
+                         Input.EndTime.Value <= Input.StartTime.Value)
+                {
+                    ModelState.AddModelError("Input.EndTime", "Kies een eindtijd die later is dan de starttijd.");
+                }
             }
 
             if (!ModelState.IsValid)
             {
-                return Page();
+                return ShowFormErrors();
             }
 
             var organiserIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -118,27 +223,44 @@ namespace EventApp.OrganiserPortal.Pages.Portal
 
             try
             {
+                Input.AttachmentsToSave.Clear();
+
+                foreach (var attachment in Attachments)
+                {
+                    var fileName = Path.GetFileName(attachment.FileName.Replace('\\', '/'));
+                    var extension = Path.GetExtension(fileName).ToLowerInvariant();
+
+                    using var stream = new MemoryStream();
+                    await attachment.CopyToAsync(stream);
+
+                    Input.AttachmentsToSave.Add(new EventAttachmentInputModel
+                    {
+                        FileName = fileName,
+                        ContentType = AllowedAttachmentTypes[extension],
+                        FileContent = stream.ToArray()
+                    });
+                }
                 for (var i = 0; i < Images.Count; i++)
                 {
                     var image = Images[i];
 
                     if (image.Length <= 0)
                     {
-                        ModelState.AddModelError(string.Empty, $"Afbeelding {i + 1} is leeg.");
-                        return Page();
+                        ModelState.AddModelError(nameof(Images), $"Afbeelding {i + 1} is leeg.");
+                        return ShowFormErrors();
                     }
 
                     if (image.Length > MaxImageSizeBytes)
                     {
-                        ModelState.AddModelError(string.Empty, $"Afbeelding {i + 1} is groter dan 5 MB.");
-                        return Page();
+                        ModelState.AddModelError(nameof(Images), $"Afbeelding {i + 1} is groter dan 5 MB.");
+                        return ShowFormErrors();
                     }
 
                     var extension = Path.GetExtension(image.FileName).ToLowerInvariant();
                     if (!AllowedImageExtensions.Contains(extension))
                     {
-                        ModelState.AddModelError(string.Empty, $"Afbeelding {i + 1} moet jpg, jpeg, png of webp zijn.");
-                        return Page();
+                        ModelState.AddModelError(nameof(Images), $"Afbeelding {i + 1} moet jpg, jpeg, png of webp zijn.");
+                        return ShowFormErrors();
                     }
 
                     var fileName = $"{Guid.NewGuid():N}{extension}";
@@ -186,6 +308,11 @@ namespace EventApp.OrganiserPortal.Pages.Portal
                     "Evenement {EventId} is succesvol aangemaakt.",
                     eventId);
 
+                if (IsBackgroundSave)
+                {
+                    return new JsonResult(new { redirectUrl = Url.Page("/Portal/Dashboard") });
+                }
+
                 return RedirectToPage("/Portal/Dashboard");
             }
             catch (Exception ex)
@@ -198,8 +325,9 @@ namespace EventApp.OrganiserPortal.Pages.Portal
                     }
                 }
 
-                ModelState.AddModelError(string.Empty, $"Het evenement kon niet opgeslagen worden. {ex.Message}");
-                return Page();
+                _logger.LogError(ex, "Opslaan van het evenement is mislukt.");
+                ModelState.AddModelError(string.Empty, "Het evenement kon niet worden opgeslagen.");
+                return ShowFormErrors(500);
             }
         }
     }
