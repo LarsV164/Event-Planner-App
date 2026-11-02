@@ -1,16 +1,17 @@
-﻿using EventApp.OrganiserPortal.Pages.Portal;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using EventApp.OrganiserPortal.Pages.Portal;
 using EventApp.OrganiserPortal.Repositories;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Moq;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 using Xunit;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace EventApp.OrganiserPortal.Tests
 {
@@ -19,22 +20,28 @@ namespace EventApp.OrganiserPortal.Tests
         [Fact]
         public async Task EPT17_ZonderAfbeelding_WordtNietOpgeslagen()
         {
-            // Arrange: maak nepversies van de dependencies.
+            // Arrange
             var repositoryMock =
                 new Mock<IOrganiserRepository>(MockBehavior.Strict);
 
+            repositoryMock
+                .Setup(repository => repository.GetAllCategoriesAsync())
+                .ReturnsAsync(
+                    new List<(int CategoryId, string CategoryName)>
+                    {
+                        (1, "Muziek"),
+                        (2, "Cultuur")
+                    });
+
             var environmentMock = new Mock<IWebHostEnvironment>();
             var configurationMock = new Mock<IConfiguration>();
-            var loggerMock = new Mock<ILogger<CreateModel>>();
 
-            // Geef de dependencies via de constructor mee.
             var pagina = new CreateModel(
                 repositoryMock.Object,
                 environmentMock.Object,
                 configurationMock.Object,
-                loggerMock.Object);
+                NullLogger<CreateModel>.Instance);
 
-            // Simuleer een ingelogde organisator.
             var gebruiker = new ClaimsPrincipal(
                 new ClaimsIdentity(
                     new[]
@@ -51,19 +58,16 @@ namespace EventApp.OrganiserPortal.Tests
                 }
             };
 
-            // Geldige formuliergegevens, maar geen afbeelding.
             pagina.Input = FormTestHelper.MaakGeldigeInvoer();
             pagina.Images.Clear();
 
-            // Act: probeer het evenement op te slaan.
+            // Act
             var resultaat = await pagina.OnPostAsync();
 
-            // Assert: het formulier wordt opnieuw getoond.
+            // Assert
             resultaat.Should().BeOfType<PageResult>();
-
             pagina.ModelState.IsValid.Should().BeFalse();
 
-            // Controleer de specifieke foutmelding.
             var foutmeldingen = pagina.ModelState.Values
                 .SelectMany(waarde => waarde.Errors)
                 .Select(fout => fout.ErrorMessage);
@@ -71,7 +75,11 @@ namespace EventApp.OrganiserPortal.Tests
             foutmeldingen.Should().Contain(
                 "Upload minimaal één afbeelding.");
 
-            // Er mag geen enkele repositorymethode zijn aangeroepen.
+            // Categorieën ophalen mag; opslagaanroepen niet.
+            repositoryMock.Verify(
+                repository => repository.GetAllCategoriesAsync(),
+                Times.AtLeastOnce);
+
             repositoryMock.VerifyNoOtherCalls();
         }
     }

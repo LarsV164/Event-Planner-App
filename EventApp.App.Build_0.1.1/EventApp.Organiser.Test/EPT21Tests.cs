@@ -1,19 +1,20 @@
-﻿using EventApp.OrganiserPortal.Pages.Portal;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
+using EventApp.OrganiserPortal.Pages.Portal;
 using EventApp.OrganiserPortal.Repositories;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Moq;
-using System;
-using System.IO;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace EventApp.OrganiserPortal.Tests
 {
@@ -22,16 +23,22 @@ namespace EventApp.OrganiserPortal.Tests
         [Fact]
         public async Task EPT21_PdfAlsAfbeelding_WordtAfgewezen()
         {
-            // Arrange: maak de dependencies.
+            // Arrange
             var repositoryMock =
                 new Mock<IOrganiserRepository>(MockBehavior.Strict);
 
+            repositoryMock
+                .Setup(repository => repository.GetAllCategoriesAsync())
+                .ReturnsAsync(
+                    new List<(int CategoryId, string CategoryName)>
+                    {
+                        (1, "Muziek"),
+                        (2, "Cultuur")
+                    });
+
             var environmentMock = new Mock<IWebHostEnvironment>();
             var configurationMock = new Mock<IConfiguration>();
-            var loggerMock = new Mock<ILogger<CreateModel>>();
 
-            // De paginacode maakt vóór de bestandscontrole een map aan.
-            // Gebruik daarvoor een unieke tijdelijke testmap.
             var testMap = Path.Combine(
                 Path.GetTempPath(),
                 "EventApp-EPT21-" + Guid.NewGuid().ToString("N"));
@@ -46,9 +53,8 @@ namespace EventApp.OrganiserPortal.Tests
                     repositoryMock.Object,
                     environmentMock.Object,
                     configurationMock.Object,
-                    loggerMock.Object);
+                    NullLogger<CreateModel>.Instance);
 
-                // Simuleer een ingelogde organisator.
                 var gebruiker = new ClaimsPrincipal(
                     new ClaimsIdentity(
                         new[]
@@ -67,13 +73,13 @@ namespace EventApp.OrganiserPortal.Tests
 
                 pagina.Input = FormTestHelper.MaakGeldigeInvoer();
 
-                // Simuleer een kleine, niet-lege PDF-upload.
+                // Een kleine, niet-lege upload met PDF-extensie.
                 var inhoud = Encoding.UTF8.GetBytes(
                     "%PDF-1.4\nTestbestand voor EPT21");
 
                 using var stream = new MemoryStream(inhoud);
 
-                var bestand = new FormFile(
+                pagina.Images.Add(new FormFile(
                     stream,
                     0,
                     stream.Length,
@@ -82,16 +88,13 @@ namespace EventApp.OrganiserPortal.Tests
                 {
                     Headers = new HeaderDictionary(),
                     ContentType = "application/pdf"
-                };
+                });
 
-                pagina.Images.Add(bestand);
-
-                // Act: probeer het evenement op te slaan.
+                // Act
                 var resultaat = await pagina.OnPostAsync();
 
-                // Assert: het formulier wordt opnieuw getoond.
+                // Assert
                 resultaat.Should().BeOfType<PageResult>();
-
                 pagina.ModelState.IsValid.Should().BeFalse();
 
                 var foutmeldingen = pagina.ModelState.Values
@@ -101,19 +104,25 @@ namespace EventApp.OrganiserPortal.Tests
                 foutmeldingen.Should().Contain(
                     "Afbeelding 1 moet jpg, jpeg, png of webp zijn.");
 
-                // Er mag niets naar de repository worden gestuurd.
+                // Categorieën ophalen mag; opslagaanroepen niet.
+                repositoryMock.Verify(
+                    repository => repository.GetAllCategoriesAsync(),
+                    Times.AtLeastOnce);
+
                 repositoryMock.VerifyNoOtherCalls();
 
-                // Het afgewezen bestand mag niet zijn opgeslagen.
-                Directory.GetFiles(
-                    testMap,
-                    "*",
-                    SearchOption.AllDirectories)
-                    .Should().BeEmpty();
+                // Het afgewezen bestand mag niet op schijf staan.
+                if (Directory.Exists(testMap))
+                {
+                    Directory.GetFiles(
+                        testMap,
+                        "*",
+                        SearchOption.AllDirectories)
+                        .Should().BeEmpty();
+                }
             }
             finally
             {
-                // Ruim uitsluitend de tijdelijke testmap op.
                 if (Directory.Exists(testMap))
                 {
                     Directory.Delete(testMap, recursive: true);
