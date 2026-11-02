@@ -105,6 +105,40 @@ namespace EventApp.OrganiserPortal.Repositories
             return result;
         }
 
+        public async Task<(int CategoryId, string CategoryName)> GetOrCreateCategoryAsync(string categoryName)
+        {
+            var trimmedName = categoryName.Trim();
+
+            await using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            await using (var findCommand = new SqlCommand(OrganiserQueries.FindCategoryWithName, connection))
+            {
+                findCommand.Parameters.AddWithValue("@CategoryName", trimmedName);
+
+                await using var reader = await findCommand.ExecuteReaderAsync();
+                if (await reader.ReadAsync())
+                {
+                    return (
+                        reader.GetInt32(reader.GetOrdinal("category_id")),
+                        reader.GetString(reader.GetOrdinal("category_name")));
+                }
+            }
+
+            await using var insertCommand = new SqlCommand(OrganiserQueries.InsertCategoryWithName, connection);
+            insertCommand.Parameters.AddWithValue("@CategoryName", trimmedName);
+
+            await using var insertReader = await insertCommand.ExecuteReaderAsync();
+            if (!await insertReader.ReadAsync())
+            {
+                throw new InvalidOperationException("De categorie kon niet worden aangemaakt.");
+            }
+
+            return (
+                insertReader.GetInt32(insertReader.GetOrdinal("category_id")),
+                insertReader.GetString(insertReader.GetOrdinal("category_name")));
+        }
+
         public async Task<int> GetNextEventIdAsync()
         {
             await using var connection = new SqlConnection(_connectionString);
@@ -194,6 +228,24 @@ namespace EventApp.OrganiserPortal.Repositories
                 return null;
             }
 
+            var categoryIds = new HashSet<int>();
+
+            if (!reader.IsDBNull(reader.GetOrdinal("category_ids")))
+            {
+                foreach (var categoryId in ParseCategoryIds(reader.GetString(reader.GetOrdinal("category_ids"))))
+                {
+                    categoryIds.Add(categoryId);
+                }
+            }
+
+            if (!reader.IsDBNull(reader.GetOrdinal("linked_category_ids")))
+            {
+                foreach (var categoryId in ParseCategoryIds(reader.GetString(reader.GetOrdinal("linked_category_ids"))))
+                {
+                    categoryIds.Add(categoryId);
+                }
+            }
+
             return new CreateEventInputModel
             {
                 EventName = reader.GetString(reader.GetOrdinal("event_name")),
@@ -223,8 +275,18 @@ namespace EventApp.OrganiserPortal.Repositories
                     : reader.GetBoolean(reader.GetOrdinal("disabled_toilet_available")),
                 WheelchairAccessibleToilet = reader.IsDBNull(reader.GetOrdinal("wheelchair_accessible_toilet"))
                     ? null
-                    : reader.GetBoolean(reader.GetOrdinal("wheelchair_accessible_toilet"))
+                    : reader.GetBoolean(reader.GetOrdinal("wheelchair_accessible_toilet")),
+                CategoryIds = categoryIds.OrderBy(categoryId => categoryId).ToList()
             };
+        }
+
+        private static IEnumerable<int> ParseCategoryIds(string value)
+        {
+            return value
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(valuePart => int.TryParse(valuePart.Trim(), out var categoryId) ? categoryId : 0)
+                .Where(categoryId => categoryId > 0)
+                .Distinct();
         }
 
         public async Task UpdateEventAsync(int organiserId, int eventId, CreateEventInputModel input)
@@ -250,8 +312,17 @@ namespace EventApp.OrganiserPortal.Repositories
                     eventCommand.Parameters.AddWithValue("@DisabledParkingAvailable", (object?)input.DisabledParkingAvailable ?? DBNull.Value);
                     eventCommand.Parameters.AddWithValue("@DisabledToiletAvailable", (object?)input.DisabledToiletAvailable ?? DBNull.Value);
                     eventCommand.Parameters.AddWithValue("@WheelchairAccessibleToilet", (object?)input.WheelchairAccessibleToilet ?? DBNull.Value);
+                    eventCommand.Parameters.AddWithValue("@CategoryIds", input.CategoryIds != null && input.CategoryIds.Count > 0
+                        ? string.Join(",", input.CategoryIds)
+                        : (object)DBNull.Value);
 
                     await eventCommand.ExecuteNonQueryAsync();
+                }
+
+                await using (var deleteCategoriesCommand = new SqlCommand(OrganiserQueries.DeleteEventCategories, connection, transaction))
+                {
+                    deleteCategoriesCommand.Parameters.AddWithValue("@EventId", eventId);
+                    await deleteCategoriesCommand.ExecuteNonQueryAsync();
                 }
 
                 await using (var locationCommand = new SqlCommand(OrganiserQueries.UpdateEventLocation, connection, transaction))

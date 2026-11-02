@@ -35,10 +35,19 @@ OUTER APPLY
 OUTER APPLY
 (
     SELECT STRING_AGG(ec.category_name, ', ') AS categories
-    FROM dbo.event_categories ec
-    JOIN dbo.event_event_categories eec
-    ON ec.category_id = eec.category_id
-    WHERE eec.event_id = e.event_id
+    FROM
+    (
+        SELECT TRY_CONVERT(int, LTRIM(RTRIM(parts.value))) AS category_id
+        FROM STRING_SPLIT(ISNULL(e.category_ids, ''), ',') parts
+
+        UNION
+
+        SELECT eec.category_id
+        FROM dbo.event_event_categories eec
+        WHERE eec.event_id = e.event_id
+    ) ids
+    INNER JOIN dbo.event_categories ec
+        ON ec.category_id = ids.category_id
 ) cat
 WHERE ISNULL(e.canceled, 0) = 0
 ORDER BY e.event_name;";
@@ -79,10 +88,19 @@ OUTER APPLY
 OUTER APPLY
 (
     SELECT STRING_AGG(ec.category_name, ', ') AS categories
-    FROM dbo.event_categories ec
-    JOIN dbo.event_event_categories eec
-    ON ec.category_id = eec.category_id
-    WHERE eec.event_id = e.event_id
+    FROM
+    (
+        SELECT TRY_CONVERT(int, LTRIM(RTRIM(parts.value))) AS category_id
+        FROM STRING_SPLIT(ISNULL(e.category_ids, ''), ',') parts
+
+        UNION
+
+        SELECT eec.category_id
+        FROM dbo.event_event_categories eec
+        WHERE eec.event_id = e.event_id
+    ) ids
+    INNER JOIN dbo.event_categories ec
+        ON ec.category_id = ids.category_id
 ) cat
 WHERE e.event_id IN ({parameterList})
   AND ISNULL(e.canceled, 0) = 0

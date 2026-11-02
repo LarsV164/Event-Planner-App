@@ -23,6 +23,8 @@ namespace EventApp.OrganiserPortal.Pages.Portal
         [BindProperty(SupportsGet = true)]
         public int Id { get; set; }
 
+        public List<(int CategoryId, string CategoryName)> AvailableCategories { get; set; } = new();
+
         public async Task<IActionResult> OnGetAsync()
         {
             var organiserIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -38,7 +40,33 @@ namespace EventApp.OrganiserPortal.Pages.Portal
             }
 
             Input = eventData;
+            AvailableCategories = await _organiserRepository.GetAllCategoriesAsync();
             return Page();
+        }
+
+        public async Task<IActionResult> OnPostAddCategoryAsync(string categoryName)
+        {
+            var trimmedName = categoryName?.Trim();
+
+            if (string.IsNullOrWhiteSpace(trimmedName))
+            {
+                return BadRequest(new { message = "Vul een categorienaam in." });
+            }
+
+            if (trimmedName.Length > 100)
+            {
+                return BadRequest(new { message = "Gebruik maximaal 100 tekens voor een categorie." });
+            }
+
+            try
+            {
+                var category = await _organiserRepository.GetOrCreateCategoryAsync(trimmedName);
+                return new JsonResult(new { categoryId = category.CategoryId, categoryName = category.CategoryName });
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "De categorie kon niet worden opgeslagen." });
+            }
         }
 
         public async Task<IActionResult> OnPostAsync()
@@ -48,6 +76,8 @@ namespace EventApp.OrganiserPortal.Pages.Portal
             {
                 return Unauthorized();
             }
+
+            AvailableCategories = await _organiserRepository.GetAllCategoriesAsync();
 
             if (Input.Tickets == null)
             {

@@ -1,9 +1,12 @@
 ﻿@page
+@using System.Text.Json
 @model EventApp.OrganiserPortal.Pages.Portal.CreateModel
 
 @{
     ViewData["Title"] = "Evenement aanmaken";
     var vandaag = DateTime.Today.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+    var categoryOptionsJson = JsonSerializer.Serialize(
+        Model.AvailableCategories.Select(category => new { id = category.CategoryId, name = category.CategoryName }));
 }
 
 @section Head {
@@ -355,10 +358,10 @@
                     </div>
                 </div>
 
-                <!-- CATEGRIEN-->
+                <!-- TOEGANKELIJKHEID -->
 
                 <div class="portal-form-group--full">
-                    <h2>Categorieën </h2>
+                    <h2>Toegankelijkheid</h2>
                 </div>
 
                 <div class="portal-form-group">
@@ -401,20 +404,44 @@
                     <span asp-validation-for="Input.WheelchairAccessibleToilet"></span>
                 </div>
 
-                <div class="portal-form-group portal-form-group--full">
-                    <h2>Categorieën</h2>
-                    <div class="EventApp-boolean-group">
-                        @foreach (var category in Model.AvailableCategories)
+                <div class="portal-form-group portal-form-group--full portal-category-picker"
+                     data-category-picker
+                     data-add-url="@Url.Page("/Portal/Create", "AddCategory")"
+                     data-categories="@categoryOptionsJson">
+                    <label for="category-search-input">Categorieën</label>
+
+                    <div class="portal-tagbox portal-category-selected"
+                         data-category-selected
+                         aria-live="polite"></div>
+
+                    <div class="portal-category-search">
+                        <input id="category-search-input"
+                               type="text"
+                               class="portal-tag-input"
+                               placeholder="Zoek een categorie of typ een nieuwe..."
+                               autocomplete="off"
+                               role="combobox"
+                               aria-autocomplete="list"
+                               aria-expanded="false"
+                               aria-controls="category-suggestions"
+                               data-category-search />
+
+                        <div id="category-suggestions"
+                             class="portal-category-suggestions"
+                             role="listbox"
+                             data-category-suggestions
+                             hidden></div>
+                    </div>
+
+                    <div data-category-hidden>
+                        @for (var i = 0; i < Model.Input.CategoryIds.Count; i++)
                         {
-                            <label class="EventApp-checkbox">
-                                <input type="checkbox"
-                                       name="Input.CategoryIds"
-                                       value="@category.CategoryId"
-                                       checked="@(Model.Input.CategoryIds.Contains(category.CategoryId))" />
-                                <span>@category.CategoryName</span>
-                            </label>
+                            <input type="hidden" name="Input.CategoryIds[@i]" value="@Model.Input.CategoryIds[i]" />
                         }
                     </div>
+
+                    <small class="portal-extra-help">Kies een bestaande categorie of voeg een nieuwe toe als deze nog niet bestaat.</small>
+                    <p class="portal-category-feedback" data-category-feedback hidden></p>
                 </div>
 
                 <!-- OUDE CATEGORIE 
@@ -521,6 +548,8 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script src="~/js/category-picker.js" asp-append-version="true"></script>
 
     <script>
         jQuery(function ($) {

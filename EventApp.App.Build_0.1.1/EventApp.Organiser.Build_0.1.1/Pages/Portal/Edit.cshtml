@@ -1,8 +1,11 @@
 ﻿@page "{id:int}"
+@using System.Text.Json
 @model EventApp.OrganiserPortal.Pages.Portal.EditModel
 
 @{
     ViewData["Title"] = "Evenement bewerken";
+    var categoryOptionsJson = JsonSerializer.Serialize(
+        Model.AvailableCategories.Select(category => new { id = category.CategoryId, name = category.CategoryName }));
 }
 
 @section Head {
@@ -173,24 +176,44 @@
                     <span asp-validation-for="Input.WheelchairAccessibleToilet"></span>
                 </div>
 
-                <div class="portal-form-group portal-form-group--full">
-                    <label for="categories-input">Categorieën</label>
-                    <div id="categories-tagbox" class="portal-tagbox"></div>
-                    <input id="categories-input"
-                           type="text"
-                           class="portal-tag-input"
-                           placeholder="Typ een categorie en druk op Enter"
-                           autocomplete="off" />
-                    <div id="categories-suggestions" class="portal-tag-suggestions"></div>
-                    <div id="categories-hidden-inputs">
-                        @if (Model.Input.Categories != null)
+                <div class="portal-form-group portal-form-group--full portal-category-picker"
+                     data-category-picker
+                     data-add-url="@Url.Page("/Portal/Edit", "AddCategory", new { id = Model.Id })"
+                     data-categories="@categoryOptionsJson">
+                    <label for="category-search-input">Categorieën</label>
+
+                    <div class="portal-tagbox portal-category-selected"
+                         data-category-selected
+                         aria-live="polite"></div>
+
+                    <div class="portal-category-search">
+                        <input id="category-search-input"
+                               type="text"
+                               class="portal-tag-input"
+                               placeholder="Zoek een categorie of typ een nieuwe..."
+                               autocomplete="off"
+                               role="combobox"
+                               aria-autocomplete="list"
+                               aria-expanded="false"
+                               aria-controls="category-suggestions"
+                               data-category-search />
+
+                        <div id="category-suggestions"
+                             class="portal-category-suggestions"
+                             role="listbox"
+                             data-category-suggestions
+                             hidden></div>
+                    </div>
+
+                    <div data-category-hidden>
+                        @for (var i = 0; i < Model.Input.CategoryIds.Count; i++)
                         {
-                            for (var i = 0; i < Model.Input.Categories.Count; i++)
-                            {
-                                <input type="hidden" name="Input.Categories[@i]" value="@Model.Input.Categories[i]" />
-                            }
+                            <input type="hidden" name="Input.CategoryIds[@i]" value="@Model.Input.CategoryIds[i]" />
                         }
                     </div>
+
+                    <small class="portal-extra-help">Kies een bestaande categorie of voeg een nieuwe toe als deze nog niet bestaat.</small>
+                    <p class="portal-category-feedback" data-category-feedback hidden></p>
                 </div>
 
                 <div class="portal-form-group portal-form-group--full">
@@ -231,6 +254,8 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script src="~/js/category-picker.js" asp-append-version="true"></script>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="

@@ -46,12 +46,26 @@ LEFT JOIN
 LEFT JOIN
 (
     SELECT
-        eec.event_id,
+        source.event_id,
         STRING_AGG(ec.category_name, ', ') AS categories_text
-    FROM dbo.event_event_categories eec
+    FROM
+    (
+        SELECT
+            e2.event_id,
+            TRY_CONVERT(int, LTRIM(RTRIM(parts.value))) AS category_id
+        FROM dbo.events e2
+        CROSS APPLY STRING_SPLIT(ISNULL(e2.category_ids, ''), ',') parts
+
+        UNION
+
+        SELECT
+            eec.event_id,
+            eec.category_id
+        FROM dbo.event_event_categories eec
+    ) source
     INNER JOIN dbo.event_categories ec
-        ON ec.category_id = eec.category_id
-    GROUP BY eec.event_id
+        ON ec.category_id = source.category_id
+    GROUP BY source.event_id
 ) cat
     ON cat.event_id = e.event_id
 LEFT JOIN
@@ -217,12 +231,30 @@ SELECT TOP 1 category_id
 FROM dbo.event_categories
 WHERE LOWER(category_name) = LOWER(@CategoryName);";
 
+        public const string FindCategoryWithName = @"
+SELECT TOP 1
+    category_id,
+    category_name
+FROM dbo.event_categories
+WHERE LOWER(category_name) = LOWER(@CategoryName);";
+
         public const string InsertCategory = @"
 INSERT INTO dbo.event_categories (
     category_name,
     icon_name
 )
 OUTPUT INSERTED.category_id
+VALUES (
+    @CategoryName,
+    NULL
+);";
+
+        public const string InsertCategoryWithName = @"
+INSERT INTO dbo.event_categories (
+    category_name,
+    icon_name
+)
+OUTPUT INSERTED.category_id, INSERTED.category_name
 VALUES (
     @CategoryName,
     NULL
@@ -277,7 +309,13 @@ SELECT TOP 1
     e.has_sitting_places,
     e.disabled_parking_available,
     e.disabled_toilet_available,
-    e.wheelchair_accessible_toilet
+    e.wheelchair_accessible_toilet,
+    e.category_ids,
+    (
+        SELECT STRING_AGG(CAST(eec.category_id AS varchar(20)), ',')
+        FROM dbo.event_event_categories eec
+        WHERE eec.event_id = e.event_id
+    ) AS linked_category_ids
 FROM dbo.events e
 INNER JOIN dbo.locations l
     ON l.location_id = e.location_id
@@ -294,10 +332,15 @@ SET
     e.has_sitting_places = @HasSittingPlaces,
     e.disabled_parking_available = @DisabledParkingAvailable,
     e.disabled_toilet_available = @DisabledToiletAvailable,
-    e.wheelchair_accessible_toilet = @WheelchairAccessibleToilet
+    e.wheelchair_accessible_toilet = @WheelchairAccessibleToilet,
+    e.category_ids = @CategoryIds
 FROM dbo.events e
 WHERE e.event_id = @EventId
   AND e.organiser_id = @OrganiserId;";
+
+        public const string DeleteEventCategories = @"
+DELETE FROM dbo.event_event_categories
+WHERE event_id = @EventId;";
 
         public const string UpdateEventLocation = @"
 UPDATE l
