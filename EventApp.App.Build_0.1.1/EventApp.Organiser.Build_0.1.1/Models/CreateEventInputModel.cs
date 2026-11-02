@@ -63,7 +63,7 @@ namespace EventApp.OrganiserPortal.Models
         [RegularExpression(@"^[^0-9]+$", ErrorMessage = "Vul een straatnaam zonder cijfers in. Zet het huisnummer in het aparte veld.")]
         public string Street { get; set; } = "";
 
-        [Required(ErrorMessage = "Huisnummer is verplicht")]
+        //[Required(ErrorMessage = "Huisnummer is verplicht")]
         [Display(Name = "Huisnummer")]
         [Range(1, int.MaxValue, ErrorMessage = "Vul een heel huisnummer van 1 of hoger in.")] public int? HouseNumber { get; set; }
 
