@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Xunit;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace EventApp.OrganiserPortal.Tests
 {
@@ -22,9 +23,18 @@ namespace EventApp.OrganiserPortal.Tests
         [Fact]
         public async Task EPT36_GeenTickets_VoegtGratisTicketToe()
         {
-            // Arrange: maak de dependencies.
+            // Arrange
             var repositoryMock =
                 new Mock<IOrganiserRepository>(MockBehavior.Strict);
+
+            repositoryMock
+                .Setup(repository => repository.GetAllCategoriesAsync())
+                .ReturnsAsync(
+                    new List<(int CategoryId, string CategoryName)>
+                    {
+                        (1, "Muziek"),
+                        (2, "Cultuur")
+                    });
 
             var environmentMock = new Mock<IWebHostEnvironment>();
             var configurationMock = new Mock<IConfiguration>();
@@ -37,7 +47,6 @@ namespace EventApp.OrganiserPortal.Tests
                 .SetupGet(environment => environment.WebRootPath)
                 .Returns(testMap);
 
-            // Bewaar een kopie van de tickets die de repository ontvangt.
             List<(string TicketType, decimal Price)>? ontvangenTickets = null;
 
             repositoryMock
@@ -52,6 +61,7 @@ namespace EventApp.OrganiserPortal.Tests
                 .Callback<int, int, CreateEventInputModel>(
                     (organiserId, eventId, input) =>
                     {
+                        // Kopieer de tickets op het moment van opslaan.
                         ontvangenTickets =
                             new List<(string TicketType, decimal Price)>();
 
@@ -74,7 +84,8 @@ namespace EventApp.OrganiserPortal.Tests
                 var pagina = new CreateModel(
                     repositoryMock.Object,
                     environmentMock.Object,
-                    configurationMock.Object);
+                    configurationMock.Object,
+                    NullLogger<CreateModel>.Instance);
 
                 var gebruiker = new ClaimsPrincipal(
                     new ClaimsIdentity(
@@ -92,11 +103,10 @@ namespace EventApp.OrganiserPortal.Tests
                     }
                 };
 
-                // Geldige invoer, maar alle tickets zijn verwijderd.
                 pagina.Input = FormTestHelper.MaakGeldigeInvoer();
                 pagina.Input.Tickets.Clear();
 
-                // Kleine PNG zodat de uploadcontrole slaagt.
+                // Voeg een kleine PNG toe voor de uploadcontrole.
                 var afbeeldingBytes = Convert.FromBase64String(
                     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwC" +
                     "AAAAC0lEQVR42mP8/x8AAwMCAO+a3ioAAAAASUVORK5CYII=");
@@ -114,16 +124,15 @@ namespace EventApp.OrganiserPortal.Tests
                     ContentType = "image/png"
                 });
 
-                // Act: probeer het evenement op te slaan.
+                // Act
                 var resultaat = await pagina.OnPostAsync();
 
-                // Assert: geen fouten en terug naar het dashboard.
+                // Assert
                 pagina.ModelState.IsValid.Should().BeTrue();
 
                 resultaat.Should().BeOfType<RedirectToPageResult>()
                     .Which.PageName.Should().Be("/Portal/Dashboard");
 
-                // De repository ontvangt precies één gratis ticket.
                 ontvangenTickets.Should().NotBeNull();
                 ontvangenTickets.Should().ContainSingle();
 
@@ -132,7 +141,10 @@ namespace EventApp.OrganiserPortal.Tests
                 ontvangenTicket.TicketType.Should().Be("Gratis");
                 ontvangenTicket.Price.Should().Be(0m);
 
-                // Controleer de verwachte repositoryaanroepen.
+                repositoryMock.Verify(
+                    repository => repository.GetAllCategoriesAsync(),
+                    Times.AtLeastOnce);
+
                 repositoryMock.Verify(
                     repository => repository.GetNextEventIdAsync(),
                     Times.Once);
@@ -154,7 +166,6 @@ namespace EventApp.OrganiserPortal.Tests
             }
             finally
             {
-                // Ruim uitsluitend de tijdelijke testmap op.
                 if (Directory.Exists(testMap))
                 {
                     Directory.Delete(testMap, recursive: true);
