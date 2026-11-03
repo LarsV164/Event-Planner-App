@@ -22,29 +22,33 @@ namespace EventApp.OrganiserPortal.Models
                 },
                 [TicketStatus.PendingPayment] = new[]
                 {
-                    TicketStatus.Sold,      // betaling gelukt
-                    TicketStatus.Available  // betaling mislukt
+                    TicketStatus.Sold,      // betaling ontvangen
+                    TicketStatus.Available  // betaling mislukt of verlopen
                 },
                 [TicketStatus.Sold] = new[]
                 {
                     TicketStatus.ListedForResale, // doorverkopen
                     TicketStatus.Transferred,     // overdragen
-                    TicketStatus.Used,            // qr gescand
-                    TicketStatus.Refunded,        // refund goedgekeurd
+                    TicketStatus.Used,            // qr scannen
+                    TicketStatus.Sold,            // ongeldige qr
+                    TicketStatus.Refunded,        // refund aanvragen
                     TicketStatus.Cancelled,       // annuleren
                     TicketStatus.Expired          // event voorbij
                 },
                 [TicketStatus.ListedForResale] = new[]
                 {
-                    TicketStatus.Sold,      // opnieuw verkocht
+                    TicketStatus.Sold,      // verkocht of listing gestopt
                     TicketStatus.Cancelled, // annuleren
                     TicketStatus.Expired    // event voorbij
                 },
                 [TicketStatus.Transferred] = new[]
                 {
-                    TicketStatus.Sold // overdracht geaccepteerd
+                    TicketStatus.Sold // overdracht afgerond
                 },
-                [TicketStatus.Used] = Array.Empty<TicketStatus>(),
+                [TicketStatus.Used] = new[]
+                {
+                    TicketStatus.Used // qr al gebruikt
+                },
                 [TicketStatus.Refunded] = Array.Empty<TicketStatus>(),
                 [TicketStatus.Cancelled] = Array.Empty<TicketStatus>(),
                 [TicketStatus.Expired] = Array.Empty<TicketStatus>()
@@ -67,7 +71,7 @@ namespace EventApp.OrganiserPortal.Models
         // eindstatus check
         public static bool IsTerminal(this TicketStatus status)
         {
-            return status.GetAllowedTransitions().Count == 0;
+            return status.GetAllowedTransitions().All(next => next == status);
         }
     }
 }
