@@ -1,5 +1,6 @@
 ﻿@page
 @model EventApp.OrganiserPortal.Pages.LoginModel
+@using EventApp.OrganiserPortal.Models
 
 @{
     ViewData["Title"] = "Login";
@@ -33,5 +34,15 @@
 
             <button type="submit" class="login-submit-btn">Inloggen</button>
         </form>
+    </div>
+    <div class="login-state-panel">
+        <label for="login-state">Login status:</label>
+
+        <select id="login-state" class="form-control">
+            @foreach (var state in Enum.GetValues<OrganiserLoginState>())
+            {
+                <option value="@state">@state</option>
+            }
+        </select>
     </div>
 </div>
