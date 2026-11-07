@@ -31,8 +31,10 @@ namespace EventApp.OrganiserPortal.Pages.Portal
         private readonly IOrganiserRepository _organiserRepository;
         private readonly IWebHostEnvironment _environment;
         private readonly IConfiguration _configuration;
+        // logger maken voor createmodel gebruik gemaakt van ASPNET log 
         private readonly ILogger<CreateModel> _logger;
 
+        //Model maken 
         public CreateModel(
             IOrganiserRepository organiserRepository,
             IWebHostEnvironment environment,
@@ -332,7 +334,7 @@ namespace EventApp.OrganiserPortal.Pages.Portal
                 }
 
                 await _organiserRepository.AddEventImagesAsync(eventId, finalImageUrls);
-
+                // log informatie registeren met eventid als het is gelukt
                 _logger.LogInformation(
                     "Evenement {EventId} is succesvol aangemaakt.",
                     eventId);
@@ -353,7 +355,7 @@ namespace EventApp.OrganiserPortal.Pages.Portal
                         System.IO.File.Delete(cachedFile.TempPath);
                     }
                 }
-
+                // log error informatie registeren met eventid als het is mislukt
                 _logger.LogError(ex, "Opslaan van het evenement is mislukt.");
                 ModelState.AddModelError(string.Empty, "Het evenement kon niet worden opgeslagen.");
                 return ShowFormErrors(500);

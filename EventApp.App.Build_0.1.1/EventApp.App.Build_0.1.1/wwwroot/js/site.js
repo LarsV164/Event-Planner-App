@@ -1,4 +1,5 @@
-﻿// JavaScript-code voor het filteren van evenementen op basis van prijs.
+﻿
+ // JavaScript-code voor het filteren van evenementen op basis van prijs.
 // Dit javascript zorgt ervoor dat er geen knop nodig is om de filter toe te passen, de pagina wordt herhalen wanneer de gebruiker de filter aanpast.
 
 //console.log("site.js is geladen");

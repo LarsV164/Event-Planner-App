@@ -81,7 +81,8 @@
                         <div class="EventApp-filter-title EventApp-filter-title-static">
                             Kenmerken
                         </div>
-
+                        
+                        <!--18+-->
                         <div class="EventApp-boolean-group">
                             <label class="EventApp-checkbox">
                                 <input type="checkbox"
@@ -94,6 +95,7 @@
                         </div>
                     </div>
 
+                    <!--datum van event-->
                     <div class="EventApp-filter-group">
                         <div class="EventApp-filter-title EventApp-filter-title-static">
                             Datum
@@ -119,6 +121,49 @@
 
                         <div class="EventApp-filter-body">
                             <div class="EventApp-rating-list">
+                                <label>
+                                    <input type="radio" name="minRating" value="5"
+                                           checked="@(Model.MinRating == 5)" />
+                                    <span>5</span>
+                                </label>
+
+                                <label>
+                                    <input type="radio" name="minRating" value="4"
+                                           checked="@(Model.MinRating == 4)" />
+                                    <span>4+</span>
+                                </label>
+
+                                <label>
+                                    <input type="radio" name="minRating" value="3"
+                                           checked="@(Model.MinRating == 3)" />
+                                    <span>3+</span>
+                                </label>
+
+                                <label>
+                                    <input type="radio" name="minRating" value="2"
+                                           checked="@(Model.MinRating == 2)" />
+                                    <span>2+</span>
+                                </label>
+
+                                <label>
+                                    <input type="radio" name="minRating" value="1"
+                                           checked="@(Model.MinRating == 1)" />
+                                    <span>1+</span>
+                                </label>
+
+                                <label>
+                                    <input type="radio" name="minRating" value="0"
+                                           checked="@(Model.MinRating == 0)" />
+                                    <span>Alles</span>
+                                </label>
+                            </div>
+                        </div>
+                    </details>
+
+
+
+                  @*       <div class="EventApp-filter-body">
+                            <div class="EventApp-rating-list">
                                 @for (int rating = 5; rating >= 0; rating--)
                                 {
                                     var ratingLabel = rating == 0
@@ -137,15 +182,18 @@
                                 }
                             </div>
                         </div>
-                    </details>
+                    </details> *@
 
+
+					<!-- Prijsfilter -->
                     <details class="EventApp-filter-group EventApp-filter-dropdown" open>
                         <summary class="EventApp-filter-title">
                             <span>Prijs</span>
                             <span class="EventApp-chevron"
                                   aria-hidden="true"></span>
                         </summary>
-
+                        
+                        <!--invoervelden-->
                         <div class="EventApp-filter-body">
                             <div class="EventApp-inputs">
                                 <input type="number"
@@ -168,7 +216,7 @@
                                        step="0.01"
                                        value="@maxPriceValue" />
                             </div>
-
+                            <!--slider-->
                             <div class="EventApp-range-wrap">
                                 <div class="range-track"></div>
 
